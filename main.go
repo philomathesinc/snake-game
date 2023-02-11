@@ -19,32 +19,20 @@ func main() {
 
 	w.CenterOnScreen()
 
-	// Need 1 unit of rect on the window as Snake.
-	var rectangles []*canvas.Rectangle
-	for i := 1; i <= 20; i++ {
+	gameWindow := getGameWindow(20, 20)
+
+	w.SetPadded(false)
+	w.SetContent(gameWindow)
+	w.ShowAndRun()
+}
+
+func getGameWindow(rows, cols int) fyne.CanvasObject {
+	var rectangles []fyne.CanvasObject
+	for i := 0; i < rows*cols; i++ {
 		rect := canvas.NewRectangle(color.White)
-		rect.SetMinSize(fyne.Size{
-			Width:  40,
-			Height: 40,
-		})
-		rect.Resize(fyne.Size{
-			Width:  40,
-			Height: 40,
-		})
 		rectangles = append(rectangles, rect)
 	}
 
-	// snake := canvas.NewRectangle(color.White)
-	// snake.SetMinSize(fyne.Size{
-	// 	Width:  20,
-	// 	Height: 20,
-	// })
+	return container.NewAdaptiveGrid(20, rectangles...)
 
-	// // snake.Move()
-	// snake.Resize(fyne.NewSize(50, 50))
-
-	content := container.NewWithoutLayout(rectangles...)
-
-	w.SetContent(content)
-	w.ShowAndRun()
 }

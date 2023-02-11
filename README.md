@@ -1,7 +1,7 @@
 # SNAKE GAME
 
 1. Game Window
-    - 800X600 (Open to change)
+    - 800X600
 2. Snake
     - Moves using the WASD keys.
     - Spawns in the center.

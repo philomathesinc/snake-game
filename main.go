@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"time"
 
@@ -18,8 +17,13 @@ const (
 )
 
 type game struct {
-	window fyne.Window
-	snake  canvas.Rectangle
+	window        fyne.Window
+	snakeInstance snake
+}
+
+type snake struct {
+	direction string
+	snakeObj  canvas.Rectangle
 }
 
 var (
@@ -37,42 +41,55 @@ func main() {
 
 	w.CenterOnScreen()
 
-	gameInstance.snake = *canvas.NewRectangle(green)
-	gameInstance.snake.Resize(fyne.NewSize(singlePix, singlePix))
+	gameInstance.snakeInstance = snake{
+		direction: "up",
+		snakeObj:  *canvas.NewRectangle(green),
+	}
+	gameInstance.snakeInstance.snakeObj.Resize(fyne.NewSize(singlePix, singlePix))
 
-	gameInstance.snake.Move(fyne.NewPos((finalSpaceWidth-singlePix)/2, (finalSpaceHeight-singlePix)/2))
+	gameInstance.snakeInstance.snakeObj.Move(fyne.NewPos((finalSpaceWidth-singlePix)/2, (finalSpaceHeight-singlePix)/2))
 
-	content := container.NewWithoutLayout(&gameInstance.snake)
+	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
 	gameInstance.window = w
 
-	go runAlways()
+	go gameLoop()
 	w.ShowAndRun()
 }
 
 func printKeys(ev *fyne.KeyEvent) {
 	if ev.Name == fyne.KeyW {
-		fmt.Println("Move up")
-		newPos := fyne.NewPos(gameInstance.snake.Position().X, gameInstance.snake.Position().Y-singlePix)
-		gameInstance.snake.Move(newPos)
+		gameInstance.snakeInstance.direction = "up"
 	} else if ev.Name == fyne.KeyS {
-		newPos := fyne.NewPos(gameInstance.snake.Position().X, gameInstance.snake.Position().Y+singlePix)
-		gameInstance.snake.Move(newPos)
+		gameInstance.snakeInstance.direction = "down"
 	} else if ev.Name == fyne.KeyA {
-		newPos := fyne.NewPos(gameInstance.snake.Position().X-singlePix, gameInstance.snake.Position().Y)
-		gameInstance.snake.Move(newPos)
+		gameInstance.snakeInstance.direction = "left"
 	} else if ev.Name == fyne.KeyD {
-		newPos := fyne.NewPos(gameInstance.snake.Position().X+singlePix, gameInstance.snake.Position().Y)
-		gameInstance.snake.Move(newPos)
+		gameInstance.snakeInstance.direction = "right"
 	}
-
-	gameInstance.window.Canvas().Refresh(&gameInstance.snake)
 }
 
-func runAlways() {
+func gameLoop() {
 	for {
 		time.Sleep(time.Second)
+
+		switch gameInstance.snakeInstance.direction {
+		case "up":
+			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X, gameInstance.snakeInstance.snakeObj.Position().Y-singlePix)
+			gameInstance.snakeInstance.snakeObj.Move(newPos)
+		case "down":
+			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X, gameInstance.snakeInstance.snakeObj.Position().Y+singlePix)
+			gameInstance.snakeInstance.snakeObj.Move(newPos)
+		case "left":
+			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X-singlePix, gameInstance.snakeInstance.snakeObj.Position().Y)
+			gameInstance.snakeInstance.snakeObj.Move(newPos)
+		case "right":
+			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X+singlePix, gameInstance.snakeInstance.snakeObj.Position().Y)
+			gameInstance.snakeInstance.snakeObj.Move(newPos)
+		}
+
+		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
 	}
 }

@@ -63,6 +63,7 @@ func main() {
 func foodPellet() fyne.CanvasObject {
 	pellet := *canvas.NewCircle(white)
 	pellet.Resize(fyne.NewSize(singlePix, singlePix))
+	// TODO: Randomized position
 	pellet.Move(fyne.NewPos(80, 80))
 
 	return &pellet

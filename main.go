@@ -28,6 +28,7 @@ type snake struct {
 
 var (
 	green        = color.NRGBA{R: 0, G: 180, B: 0, A: 255}
+	white        = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 	gameInstance = game{}
 )
 
@@ -46,10 +47,10 @@ func main() {
 		snakeObj:  *canvas.NewRectangle(green),
 	}
 	gameInstance.snakeInstance.snakeObj.Resize(fyne.NewSize(singlePix, singlePix))
-
 	gameInstance.snakeInstance.snakeObj.Move(fyne.NewPos((finalSpaceWidth-singlePix)/2, (finalSpaceHeight-singlePix)/2))
 
-	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj)
+	pellet := foodPellet()
+	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, pellet)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
@@ -57,6 +58,14 @@ func main() {
 
 	go gameLoop()
 	w.ShowAndRun()
+}
+
+func foodPellet() fyne.CanvasObject {
+	pellet := *canvas.NewCircle(white)
+	pellet.Resize(fyne.NewSize(singlePix, singlePix))
+	pellet.Move(fyne.NewPos(80, 80))
+
+	return &pellet
 }
 
 func printKeys(ev *fyne.KeyEvent) {

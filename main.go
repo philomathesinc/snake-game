@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
+	"os"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -9,42 +12,48 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
+const (
+	finalSpaceWidth  = 400
+	finalSpaceHeight = 400
+	singlePix        = 40
+)
+
+var (
+	green = color.NRGBA{R: 0, G: 180, B: 0, A: 255}
+)
+
 func main() {
 	a := app.New()
 	w := a.NewWindow("Hello World")
 	w.Resize(fyne.Size{
-		Width:  800,
-		Height: 800,
+		Width:  finalSpaceWidth,
+		Height: finalSpaceHeight,
 	})
 
 	w.CenterOnScreen()
 
-	// Need 1 unit of rect on the window as Snake.
-	var rectangles []*canvas.Rectangle
-	for i := 1; i <= 20; i++ {
-		rect := canvas.NewRectangle(color.White)
-		rect.SetMinSize(fyne.Size{
-			Width:  40,
-			Height: 40,
-		})
-		rect.Resize(fyne.Size{
-			Width:  40,
-			Height: 40,
-		})
-		rectangles = append(rectangles, rect)
-	}
+	snake := canvas.NewRectangle(green)
+	snake.Resize(fyne.NewSize(singlePix, singlePix))
 
-	// snake := canvas.NewRectangle(color.White)
-	// snake.SetMinSize(fyne.Size{
-	// 	Width:  20,
-	// 	Height: 20,
-	// })
-
-	// // snake.Move()
-	// snake.Resize(fyne.NewSize(50, 50))
-
-	content := container.NewWithoutLayout(rectangles...)
+	content := container.NewWithoutLayout(snake)
 
 	w.SetContent(content)
+
+	fmt.Println(snake.Position())
+
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			newPos := fyne.NewPos(snake.Position().X+singlePix, snake.Position().Y+singlePix)
+			if newPos.X > finalSpaceWidth || newPos.Y > finalSpaceHeight {
+				fmt.Println("Game over")
+				os.Exit(0)
+			}
+			snake.Move(newPos)
+			fmt.Println(snake.Position())
+			snake.Refresh()
+		}
+	}()
+
 	w.ShowAndRun()
 }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -46,19 +48,31 @@ func main() {
 
 	gameInstance.window = w
 
+	go runAlways()
 	w.ShowAndRun()
 }
 
 func printKeys(ev *fyne.KeyEvent) {
 	if ev.Name == fyne.KeyW {
-		gameInstance.snake.Position().AddXY(0, singlePix)
+		fmt.Println("Move up")
+		newPos := fyne.NewPos(gameInstance.snake.Position().X, gameInstance.snake.Position().Y-singlePix)
+		gameInstance.snake.Move(newPos)
 	} else if ev.Name == fyne.KeyS {
-		gameInstance.snake.Position().AddXY(0, -singlePix)
+		newPos := fyne.NewPos(gameInstance.snake.Position().X, gameInstance.snake.Position().Y+singlePix)
+		gameInstance.snake.Move(newPos)
 	} else if ev.Name == fyne.KeyA {
-		gameInstance.snake.Position().AddXY(-singlePix, 0)
+		newPos := fyne.NewPos(gameInstance.snake.Position().X-singlePix, gameInstance.snake.Position().Y)
+		gameInstance.snake.Move(newPos)
 	} else if ev.Name == fyne.KeyD {
-		gameInstance.snake.Position().AddXY(singlePix, 0)
+		newPos := fyne.NewPos(gameInstance.snake.Position().X+singlePix, gameInstance.snake.Position().Y)
+		gameInstance.snake.Move(newPos)
 	}
 
 	gameInstance.window.Canvas().Refresh(&gameInstance.snake)
+}
+
+func runAlways() {
+	for {
+		time.Sleep(time.Second)
+	}
 }

@@ -18,7 +18,24 @@
         - [x] Score counting
         - [ ] Score display widget
 ---
-Snake
-    - Length is by default 2 units.
-    - Snake increases in 1 unit length when it touches the food pellet.
-    - Snake dies by touching itself.
+
+This is a simple implementation of the classic game "Snake" using the
+Fyne GUI toolkit. The game window is set to a size of `840x840`, and the game
+space is divided into `21x21` grid squares of `40x40` pixels each.
+
+The game starts with a single block of `green` color representing the snake's
+head, with its position set to the `center` of the game window. The snake's body
+is represented by a series of `fyne.Position` values that correspond to the grid
+squares it occupies. The direction in which the snake moves is determined by
+the WASD keys, and the snake's movement speed is controlled by a `time.Sleep`
+function call in the game loop.
+
+A `white` circle represents the food pellet, which is placed at a random position
+on the game board. When the snake's head collides with the food pellet, the
+pellet disappears, and a new one is placed at a different random position, also the
+score is incremented. If the snake's head collides with any of the walls, the
+game is over.
+
+The code uses Go's `fyne` package to create the graphical user interface and
+`time` package to control the game's loop speed.
+

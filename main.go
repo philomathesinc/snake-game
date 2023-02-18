@@ -113,8 +113,6 @@ func gameLoop() {
 			gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body[1:1], newPos)
 		}
 
-		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
-
 		// Snake dies on touching the game window.
 		if !checkIfWindowHit() {
 			gameOver()
@@ -122,10 +120,15 @@ func gameLoop() {
 
 		// Score goes up by one when snake head touches it.
 		if checkIfPelletHit() {
+			gameInstance.pellet = foodPellet()
+			gameInstance.window.SetContent(container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet))
+
 			gameInstance.score++
 
 			fmt.Printf("gameInstance.score: %v\n", gameInstance.score)
 		}
+
+		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
 	}
 }
 

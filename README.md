@@ -1,20 +1,22 @@
 # SNAKE GAME
 
 1. Game Window
-    - [ ] 840X840
-    - [ ] The game pixel will be 40 X 40; Which will make the game window have 21 X 21 game pixels.
+    - [x] 840X840
+    - [x] The game pixel will be 40 X 40; Which will make the game window have 21 X 21 game pixels.
 2. Snake
-    - [ ] Constant length of 1
-    - [ ] Spawns in the center.
-    - [ ] Moves using the WASD keys.
-    - [ ] Snake dies on touching the game window.
+    - [x] Constant length of 1
+    - [x] Spawns in the center.
+    - [x] Moves using the WASD keys.
+    - [x] Snake dies on touching the game window.
 3. Food Pellets
     - [x] 1 unit dimension
     - [x] Spawns randomly within game window.
-    - [ ] Doesn't spawn on cells occupied by the snake - Not possible till snake consumption of pellet is done.
-    - [ ] Once "consumed" by the snake, new food pellet needs to be spawned
+    - [x] Doesn't spawn on cells occupied by the snake
+    - [x] Once "consumed" by the snake, new food pellet needs to be spawned
 4. Score counter
     - Go up by one when snake head touches it.
+        - [x] Score counting
+        - [ ] Score display widget
 ---
 Snake
     - Length is by default 2 units.

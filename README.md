@@ -9,8 +9,11 @@
     - Moves using the WASD keys.
     - Snake dies on touching the game window.
 3. Food Pellets
-    - 1 unit dimension.
+    - 1 unit dimension
     - Spawns randomly within game window.
+    - Doesn't spawn on cells occupied by the snake
+    - 
+    - Once "consumed" by the snake, new food pellet needs to be spawned
 4. Score counter
     - Go up by one when snake head touches it.
 ---

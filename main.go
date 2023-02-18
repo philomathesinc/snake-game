@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -82,7 +84,7 @@ func printKeys(ev *fyne.KeyEvent) {
 
 func gameLoop() {
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 600)
 
 		switch gameInstance.snakeInstance.direction {
 		case "up":
@@ -100,5 +102,19 @@ func gameLoop() {
 		}
 
 		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
+
+		if !checkIfWindowHit() {
+			gameOver()
+		}
 	}
+}
+
+// Snake dies on touching the game window.
+func checkIfWindowHit() bool {
+	return !((gameInstance.snakeInstance.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.snakeObj.Position().Y < 0))
+}
+
+func gameOver() {
+	fmt.Println("Game over!!")
+	os.Exit(0)
 }

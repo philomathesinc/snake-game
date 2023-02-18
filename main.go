@@ -21,6 +21,8 @@ const (
 type game struct {
 	window        fyne.Window
 	snakeInstance snake
+	score         uint
+	pellet        fyne.CanvasObject
 }
 
 type snake struct {
@@ -51,8 +53,8 @@ func main() {
 	gameInstance.snakeInstance.snakeObj.Resize(fyne.NewSize(singlePix, singlePix))
 	gameInstance.snakeInstance.snakeObj.Move(fyne.NewPos((finalSpaceWidth-singlePix)/2, (finalSpaceHeight-singlePix)/2))
 
-	pellet := foodPellet()
-	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, pellet)
+	gameInstance.pellet = foodPellet()
+	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
@@ -103,15 +105,26 @@ func gameLoop() {
 
 		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
 
+		// Snake dies on touching the game window.
 		if !checkIfWindowHit() {
 			gameOver()
+		}
+
+		// Score goes up by one when snake head touches it.
+		if checkIfPelletHit() {
+			gameInstance.score++
+
+			fmt.Printf("gameInstance.score: %v\n", gameInstance.score)
 		}
 	}
 }
 
-// Snake dies on touching the game window.
 func checkIfWindowHit() bool {
 	return !((gameInstance.snakeInstance.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.snakeObj.Position().Y < 0))
+}
+
+func checkIfPelletHit() bool {
+	return gameInstance.snakeInstance.snakeObj.Position() == gameInstance.pellet.Position()
 }
 
 func gameOver() {

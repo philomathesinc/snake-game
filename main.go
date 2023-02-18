@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math/rand"
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -21,6 +22,8 @@ const (
 type game struct {
 	window        fyne.Window
 	snakeInstance snake
+	score         uint
+	pellet        fyne.CanvasObject
 }
 
 type snake struct {
@@ -55,8 +58,8 @@ func main() {
 	gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body, centerGamePixel)
 	gameInstance.snakeInstance.snakeObj.Move(centerGamePixel)
 
-	pellet := foodPellet()
-	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, pellet)
+	gameInstance.pellet = foodPellet()
+	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
@@ -89,7 +92,7 @@ func printKeys(ev *fyne.KeyEvent) {
 
 func gameLoop() {
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 600)
 
 		switch gameInstance.snakeInstance.direction {
 		case "up":
@@ -110,8 +113,19 @@ func gameLoop() {
 			gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body[1:1], newPos)
 		}
 
-		fmt.Println(gameInstance.snakeInstance.body)
 		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
+
+		// Snake dies on touching the game window.
+		if !checkIfWindowHit() {
+			gameOver()
+		}
+
+		// Score goes up by one when snake head touches it.
+		if checkIfPelletHit() {
+			gameInstance.score++
+
+			fmt.Printf("gameInstance.score: %v\n", gameInstance.score)
+		}
 	}
 }
 
@@ -135,4 +149,17 @@ func randomNumber(limit int) int {
 		i = rand.Intn(limit)
 	}
 	return i * singlePix
+}
+
+func checkIfWindowHit() bool {
+	return !((gameInstance.snakeInstance.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.snakeObj.Position().Y < 0))
+}
+
+func checkIfPelletHit() bool {
+	return gameInstance.snakeInstance.snakeObj.Position() == gameInstance.pellet.Position()
+}
+
+func gameOver() {
+	fmt.Println("Game over!!")
+	os.Exit(0)
 }

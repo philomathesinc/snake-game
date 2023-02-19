@@ -19,7 +19,3 @@
     - Go up by one when snake head touches it.
         - [x] Score counting
         - [x] Score display widget
----
-Snake Body
-    - Linked List
-    

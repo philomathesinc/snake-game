@@ -87,15 +87,19 @@ func foodPellet() fyne.CanvasObject {
 func printKeys(ev *fyne.KeyEvent) {
 	switch ev.Name {
 	case fyne.KeyW:
+		gameInstance.snakeInstance.head.direction = "up"
 	case fyne.KeyUp:
 		gameInstance.snakeInstance.head.direction = "up"
 	case fyne.KeyS:
+		gameInstance.snakeInstance.head.direction = "down"
 	case fyne.KeyDown:
 		gameInstance.snakeInstance.head.direction = "down"
 	case fyne.KeyA:
+		gameInstance.snakeInstance.head.direction = "left"
 	case fyne.KeyLeft:
 		gameInstance.snakeInstance.head.direction = "left"
 	case fyne.KeyD:
+		gameInstance.snakeInstance.head.direction = "right"
 	case fyne.KeyRight:
 		gameInstance.snakeInstance.head.direction = "right"
 	}
@@ -215,18 +219,32 @@ func updateSnakeBody(oldPos fyne.Position) {
 	tmp := gameInstance.snakeInstance.head.next
 
 	for tmp != nil {
-		tmp.next.snakeObj.Move(oldPos)
+		tmp.snakeObj.Move(oldPos)
+		gameInstance.window.Canvas().Refresh(&tmp.snakeObj)
 		oldPos = tmp.snakeObj.Position()
 		tmp = tmp.next
+	}
+
+	i := 0
+	for node := gameInstance.snakeInstance.head; node != nil; node = node.next {
+		fmt.Printf("node %v: %v, %v\n", i, node.snakeObj.Position().X, node.snakeObj.Position().Y)
+		i++
 	}
 }
 
 func increaseSnakeLength() {
-	node := newSnakeNode()
+	newNode := newSnakeNode()
 	snake := gameInstance.snakeInstance
-	headPos := snake.head.snakeObj.Position()
-	gameInstance.snakeInstance.head.snakeObj.Move(headPos)
 
-	snake.tail.next = node
+	snake.tail.next = newNode
 	snake.tail = snake.tail.next
+
+	updateSnakeBody(snake.head.snakeObj.Position())
+
+	objs := []fyne.CanvasObject{}
+	for node := gameInstance.snakeInstance.head; node != nil; node = node.next {
+		objs = append(objs, &node.snakeObj)
+	}
+	objs = append(objs, gameInstance.pellet)
+	gameInstance.window.SetContent(container.NewWithoutLayout(objs...))
 }

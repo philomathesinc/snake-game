@@ -16,7 +16,7 @@
 4. Score counter
     - Go up by one when snake head touches it.
         - [x] Score counting
-        - [ ] Score display widget
+        - [x] Score display widget
 ---
 Snake
     - Length is by default 2 units.

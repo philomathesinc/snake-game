@@ -28,10 +28,18 @@ type game struct {
 	scoreDisplayBox *canvas.Text
 }
 
-type snake struct {
-	body      []fyne.Position
+type snakeNode struct {
 	direction string
+	position  fyne.Position
 	snakeObj  canvas.Rectangle
+	next      *snakeNode
+}
+
+type snake struct {
+	head   *snakeNode
+	tail   *snakeNode
+	length int
+	// body []fyne.Position
 }
 
 var (
@@ -51,18 +59,13 @@ func main() {
 
 	w.CenterOnScreen()
 
-	gameInstance.snakeInstance = snake{
-		direction: "up",
-		snakeObj:  *canvas.NewRectangle(green),
-	}
-	gameInstance.snakeInstance.snakeObj.Resize(fyne.NewSize(singlePix, singlePix))
+	gameInstance.snakeInstance = newSnake()
 	centerGamePixel := fyne.NewPos((finalSpaceWidth-singlePix)/2, (finalSpaceHeight-singlePix)/2)
-	gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body, centerGamePixel)
-	gameInstance.snakeInstance.snakeObj.Move(centerGamePixel)
+	gameInstance.snakeInstance.head.snakeObj.Move(centerGamePixel)
 
 	gameInstance.pellet = foodPellet()
 	gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", 0), color.White)
-	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox)
+	content := container.NewWithoutLayout(&gameInstance.snakeInstance.head.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
@@ -82,14 +85,19 @@ func foodPellet() fyne.CanvasObject {
 }
 
 func printKeys(ev *fyne.KeyEvent) {
-	if ev.Name == fyne.KeyW {
-		gameInstance.snakeInstance.direction = "up"
-	} else if ev.Name == fyne.KeyS {
-		gameInstance.snakeInstance.direction = "down"
-	} else if ev.Name == fyne.KeyA {
-		gameInstance.snakeInstance.direction = "left"
-	} else if ev.Name == fyne.KeyD {
-		gameInstance.snakeInstance.direction = "right"
+	switch ev.Name {
+	case fyne.KeyW:
+	case fyne.KeyUp:
+		gameInstance.snakeInstance.head.direction = "up"
+	case fyne.KeyS:
+	case fyne.KeyDown:
+		gameInstance.snakeInstance.head.direction = "down"
+	case fyne.KeyA:
+	case fyne.KeyLeft:
+		gameInstance.snakeInstance.head.direction = "left"
+	case fyne.KeyD:
+	case fyne.KeyRight:
+		gameInstance.snakeInstance.head.direction = "right"
 	}
 }
 
@@ -97,23 +105,31 @@ func gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 400)
 
-		switch gameInstance.snakeInstance.direction {
+		switch gameInstance.snakeInstance.head.direction {
 		case "up":
-			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X, gameInstance.snakeInstance.snakeObj.Position().Y-singlePix)
-			gameInstance.snakeInstance.snakeObj.Move(newPos)
-			gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body[1:1], newPos)
+			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
+			// headNode move
+			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X, gameInstance.snakeInstance.head.snakeObj.Position().Y-singlePix)
+			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			updateSnakeBody(oldPos)
 		case "down":
-			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X, gameInstance.snakeInstance.snakeObj.Position().Y+singlePix)
-			gameInstance.snakeInstance.snakeObj.Move(newPos)
-			gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body[1:1], newPos)
+			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
+			// headNode move
+			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X, gameInstance.snakeInstance.head.snakeObj.Position().Y+singlePix)
+			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			updateSnakeBody(oldPos)
 		case "left":
-			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X-singlePix, gameInstance.snakeInstance.snakeObj.Position().Y)
-			gameInstance.snakeInstance.snakeObj.Move(newPos)
-			gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body[1:1], newPos)
+			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
+			// headNode move
+			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X-singlePix, gameInstance.snakeInstance.head.snakeObj.Position().Y)
+			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			updateSnakeBody(oldPos)
 		case "right":
-			newPos := fyne.NewPos(gameInstance.snakeInstance.snakeObj.Position().X+singlePix, gameInstance.snakeInstance.snakeObj.Position().Y)
-			gameInstance.snakeInstance.snakeObj.Move(newPos)
-			gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body[1:1], newPos)
+			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
+			// headNode move
+			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X+singlePix, gameInstance.snakeInstance.head.snakeObj.Position().Y)
+			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			updateSnakeBody(oldPos)
 		}
 
 		// Snake dies on touching the game window.
@@ -126,12 +142,15 @@ func gameLoop() {
 			gameInstance.pellet = foodPellet()
 			gameInstance.score++
 			gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", gameInstance.score), color.White)
-			gameInstance.window.SetContent(container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox))
+			gameInstance.window.SetContent(container.NewWithoutLayout(&gameInstance.snakeInstance.head.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox))
+			increaseSnakeLength()
 
 			fmt.Printf("gameInstance.score: %v\n", gameInstance.score)
 		}
 
-		gameInstance.window.Canvas().Refresh(&gameInstance.snakeInstance.snakeObj)
+		for node := gameInstance.snakeInstance.head; node != nil; node = node.next {
+			gameInstance.window.Canvas().Refresh(&node.snakeObj)
+		}
 	}
 }
 
@@ -140,10 +159,12 @@ func randomPositionInGameWindow() fyne.Position {
 	xPos := randomNumber(pixelCountLimit)
 	yPos := randomNumber(pixelCountLimit)
 	i = fyne.NewPos(float32(xPos), float32(yPos))
-	for i == gameInstance.snakeInstance.body[0] {
-		xPos = randomNumber(pixelCountLimit)
-		yPos = randomNumber(pixelCountLimit)
-		i = fyne.NewPos(float32(xPos), float32(yPos))
+	for node := gameInstance.snakeInstance.head; node != nil; node = node.next {
+		if i == node.snakeObj.Position() {
+			xPos = randomNumber(pixelCountLimit)
+			yPos = randomNumber(pixelCountLimit)
+			i = fyne.NewPos(float32(xPos), float32(yPos))
+		}
 	}
 	fmt.Println("food pellet position:", i)
 	return i
@@ -159,14 +180,53 @@ func randomNumber(limit int) int {
 }
 
 func checkIfWindowHit() bool {
-	return !((gameInstance.snakeInstance.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.snakeObj.Position().Y < 0))
+	return !((gameInstance.snakeInstance.head.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.head.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.head.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.head.snakeObj.Position().Y < 0))
 }
 
 func checkIfPelletHit() bool {
-	return gameInstance.snakeInstance.snakeObj.Position() == gameInstance.pellet.Position()
+	return gameInstance.snakeInstance.head.snakeObj.Position() == gameInstance.pellet.Position()
 }
 
 func gameOver() {
 	fmt.Println("Game over!!")
 	os.Exit(0)
+}
+
+func newSnake() snake {
+	snake := snake{}
+	snake.head = newSnakeNode()
+	snake.tail = snake.head
+
+	return snake
+}
+
+func newSnakeNode() *snakeNode {
+	snakeNode := snakeNode{
+		direction: "up",
+		snakeObj:  *canvas.NewRectangle(green),
+	}
+	snakeNode.next = nil
+	snakeNode.snakeObj.Resize(fyne.NewSize(singlePix, singlePix))
+
+	return &snakeNode
+}
+
+func updateSnakeBody(oldPos fyne.Position) {
+	tmp := gameInstance.snakeInstance.head.next
+
+	for tmp != nil {
+		tmp.next.snakeObj.Move(oldPos)
+		oldPos = tmp.snakeObj.Position()
+		tmp = tmp.next
+	}
+}
+
+func increaseSnakeLength() {
+	node := newSnakeNode()
+	snake := gameInstance.snakeInstance
+	headPos := snake.head.snakeObj.Position()
+	gameInstance.snakeInstance.head.snakeObj.Move(headPos)
+
+	snake.tail.next = node
+	snake.tail = snake.tail.next
 }

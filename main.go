@@ -20,10 +20,11 @@ const (
 )
 
 type game struct {
-	window        fyne.Window
-	snakeInstance snake
-	score         uint
-	pellet        fyne.CanvasObject
+	window          fyne.Window
+	snakeInstance   snake
+	score           uint
+	pellet          fyne.CanvasObject
+	scoreDisplayBox *canvas.Text
 }
 
 type snake struct {
@@ -59,7 +60,8 @@ func main() {
 	gameInstance.snakeInstance.snakeObj.Move(centerGamePixel)
 
 	gameInstance.pellet = foodPellet()
-	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet)
+	gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", 0), color.White)
+	content := container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
@@ -92,7 +94,7 @@ func printKeys(ev *fyne.KeyEvent) {
 
 func gameLoop() {
 	for {
-		time.Sleep(time.Millisecond * 600)
+		time.Sleep(time.Millisecond * 300)
 
 		switch gameInstance.snakeInstance.direction {
 		case "up":
@@ -121,9 +123,9 @@ func gameLoop() {
 		// Score goes up by one when snake head touches it.
 		if checkIfPelletHit() {
 			gameInstance.pellet = foodPellet()
-			gameInstance.window.SetContent(container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet))
-
 			gameInstance.score++
+			gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", gameInstance.score), color.White)
+			gameInstance.window.SetContent(container.NewWithoutLayout(&gameInstance.snakeInstance.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox))
 
 			fmt.Printf("gameInstance.score: %v\n", gameInstance.score)
 		}
@@ -142,6 +144,7 @@ func randomPositionInGameWindow() fyne.Position {
 		yPos = randomNumber(22)
 		i = fyne.NewPos(float32(xPos), float32(yPos))
 	}
+	fmt.Println("food pellet position:", i)
 	return i
 }
 
@@ -166,3 +169,6 @@ func gameOver() {
 	fmt.Println("Game over!!")
 	os.Exit(0)
 }
+
+// Bug : food pellet generation stops at
+// {640 840}

@@ -8,8 +8,8 @@
     - [x] Spawns in the center.
     - [x] Moves using the WASD keys.
     - [x] Snake dies on touching the game window.
-    - [ ] Increase length of snake on food consumption
-    - [ ] Snake dies by touching itself.
+    - [x] Increase length of snake on food consumption
+    - [x] Snake dies by touching itself.
 3. Food Pellets
     - [x] 1 unit dimension
     - [x] Spawns randomly within game window.

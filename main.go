@@ -60,7 +60,6 @@ func main() {
 	gameInstance.snakeInstance = newSnake()
 	centerGamePixel := fyne.NewPos((finalSpaceWidth-singlePix)/2, (finalSpaceHeight-singlePix)/2)
 	gameInstance.snakeInstance.head.snakeObj.Move(centerGamePixel)
-	// gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body, centerGamePixel)
 
 	gameInstance.pellet = foodPellet()
 	gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", 0), color.White)
@@ -114,24 +113,28 @@ func gameLoop() {
 			// headNode move
 			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X, gameInstance.snakeInstance.head.snakeObj.Position().Y-singlePix)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		case "down":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
 			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X, gameInstance.snakeInstance.head.snakeObj.Position().Y+singlePix)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		case "left":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
 			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X-singlePix, gameInstance.snakeInstance.head.snakeObj.Position().Y)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		case "right":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
 			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X+singlePix, gameInstance.snakeInstance.head.snakeObj.Position().Y)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
+			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		}
 
@@ -239,7 +242,6 @@ func updateSnakeBody(headOldPos fyne.Position) {
 	for tmp != nil {
 		olderPosition := tmp.snakeObj.Position()
 		tmp.snakeObj.Move(oldPos)
-		// gameInstance.snakeInstance.body = append(gameInstance.snakeInstance.body, oldPos)
 		oldPos = olderPosition
 		gameInstance.window.Canvas().Refresh(&tmp.snakeObj)
 		tmp = tmp.next

@@ -17,6 +17,7 @@ const (
 	finalSpaceWidth  = 840
 	finalSpaceHeight = 840
 	singlePix        = 40
+	pixelCountLimit  = 21
 )
 
 type game struct {
@@ -94,7 +95,7 @@ func printKeys(ev *fyne.KeyEvent) {
 
 func gameLoop() {
 	for {
-		time.Sleep(time.Millisecond * 300)
+		time.Sleep(time.Millisecond * 400)
 
 		switch gameInstance.snakeInstance.direction {
 		case "up":
@@ -136,12 +137,12 @@ func gameLoop() {
 
 func randomPositionInGameWindow() fyne.Position {
 	var i fyne.Position
-	xPos := randomNumber(22)
-	yPos := randomNumber(22)
+	xPos := randomNumber(pixelCountLimit)
+	yPos := randomNumber(pixelCountLimit)
 	i = fyne.NewPos(float32(xPos), float32(yPos))
 	for i == gameInstance.snakeInstance.body[0] {
-		xPos = randomNumber(22)
-		yPos = randomNumber(22)
+		xPos = randomNumber(pixelCountLimit)
+		yPos = randomNumber(pixelCountLimit)
 		i = fyne.NewPos(float32(xPos), float32(yPos))
 	}
 	fmt.Println("food pellet position:", i)
@@ -169,6 +170,3 @@ func gameOver() {
 	fmt.Println("Game over!!")
 	os.Exit(0)
 }
-
-// Bug : food pellet generation stops at
-// {640 840}

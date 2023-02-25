@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"image/color"
 	"math/rand"
-	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 )
 
 const (
@@ -26,6 +26,7 @@ type game struct {
 	score           uint
 	pellet          fyne.CanvasObject
 	scoreDisplayBox *canvas.Text
+	isPaused        bool
 }
 
 type snakeNode struct {
@@ -63,7 +64,11 @@ func main() {
 
 	gameInstance.pellet = foodPellet()
 	gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", 0), color.White)
-	content := container.NewWithoutLayout(&gameInstance.snakeInstance.head.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox)
+	content := container.NewWithoutLayout(
+		&gameInstance.snakeInstance.head.snakeObj,
+		gameInstance.pellet,
+		gameInstance.scoreDisplayBox,
+	)
 	w.SetContent(content)
 	w.Canvas().SetOnTypedKey(printKeys)
 
@@ -84,55 +89,75 @@ func foodPellet() fyne.CanvasObject {
 
 func printKeys(ev *fyne.KeyEvent) {
 	switch ev.Name {
-	case fyne.KeyW:
+	case fyne.KeyW, fyne.KeyUp:
 		gameInstance.snakeInstance.head.direction = "up"
-	case fyne.KeyUp:
-		gameInstance.snakeInstance.head.direction = "up"
-	case fyne.KeyS:
+	case fyne.KeyS, fyne.KeyDown:
 		gameInstance.snakeInstance.head.direction = "down"
-	case fyne.KeyDown:
-		gameInstance.snakeInstance.head.direction = "down"
-	case fyne.KeyA:
+	case fyne.KeyA, fyne.KeyLeft:
 		gameInstance.snakeInstance.head.direction = "left"
-	case fyne.KeyLeft:
-		gameInstance.snakeInstance.head.direction = "left"
-	case fyne.KeyD:
+	case fyne.KeyD, fyne.KeyRight:
 		gameInstance.snakeInstance.head.direction = "right"
-	case fyne.KeyRight:
-		gameInstance.snakeInstance.head.direction = "right"
+	case fyne.KeySpace, fyne.KeyP:
+		gamePaused()
+		// While paused the printKeys function is still called and the direction of the snake is updated even while paused.
 	}
+}
+
+func gamePaused() {
+	if gameInstance.isPaused {
+		gameInstance.isPaused = false
+		return
+	}
+
+	gameInstance.isPaused = true
 }
 
 func gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 200)
 
+		if gameInstance.isPaused {
+			continue
+		}
+
 		switch gameInstance.snakeInstance.head.direction {
 		case "up":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
-			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X, gameInstance.snakeInstance.head.snakeObj.Position().Y-singlePix)
+			newPos := fyne.NewPos(
+				gameInstance.snakeInstance.head.snakeObj.Position().X,
+				gameInstance.snakeInstance.head.snakeObj.Position().Y-singlePix,
+			)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
 			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		case "down":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
-			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X, gameInstance.snakeInstance.head.snakeObj.Position().Y+singlePix)
+			newPos := fyne.NewPos(
+				gameInstance.snakeInstance.head.snakeObj.Position().X,
+				gameInstance.snakeInstance.head.snakeObj.Position().Y+singlePix,
+			)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
 			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		case "left":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
-			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X-singlePix, gameInstance.snakeInstance.head.snakeObj.Position().Y)
+			newPos := fyne.NewPos(
+				gameInstance.snakeInstance.head.snakeObj.Position().X-singlePix,
+				gameInstance.snakeInstance.head.snakeObj.Position().Y,
+			)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
 			// rest of the snake body move
 			updateSnakeBody(oldPos)
 		case "right":
 			oldPos := gameInstance.snakeInstance.head.snakeObj.Position()
 			// headNode move
-			newPos := fyne.NewPos(gameInstance.snakeInstance.head.snakeObj.Position().X+singlePix, gameInstance.snakeInstance.head.snakeObj.Position().Y)
+			newPos := fyne.NewPos(
+				gameInstance.snakeInstance.head.snakeObj.Position().X+singlePix,
+				gameInstance.snakeInstance.head.snakeObj.Position().Y,
+			)
 			gameInstance.snakeInstance.head.snakeObj.Move(newPos)
 			// rest of the snake body move
 			updateSnakeBody(oldPos)
@@ -152,8 +177,17 @@ func gameLoop() {
 		if pelletHit() {
 			gameInstance.pellet = foodPellet()
 			gameInstance.score++
-			gameInstance.scoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", gameInstance.score), color.White)
-			gameInstance.window.SetContent(container.NewWithoutLayout(&gameInstance.snakeInstance.head.snakeObj, gameInstance.pellet, gameInstance.scoreDisplayBox))
+			gameInstance.scoreDisplayBox = canvas.NewText(
+				fmt.Sprintf("Score: %d", gameInstance.score),
+				color.White,
+			)
+			gameInstance.window.SetContent(
+				container.NewWithoutLayout(
+					&gameInstance.snakeInstance.head.snakeObj,
+					gameInstance.pellet,
+					gameInstance.scoreDisplayBox,
+				),
+			)
 			increaseSnakeLength()
 
 			fmt.Printf("gameInstance.score: %v\n", gameInstance.score)
@@ -209,7 +243,13 @@ func pelletHit() bool {
 
 func gameOver() {
 	fmt.Println("Game over!!")
-	os.Exit(0)
+	text1 := canvas.NewText("Game Over!!", color.White)
+	text2 := canvas.NewText(fmt.Sprintf("SCORE : %d", gameInstance.score), color.White)
+	text1.Alignment = fyne.TextAlignCenter
+	text2.Alignment = fyne.TextAlignCenter
+	score := container.NewVBox(text1, text2)
+	content := container.New(layout.NewCenterLayout(), score)
+	gameInstance.window.SetContent(content)
 }
 
 func newSnake() snake {
@@ -223,7 +263,7 @@ func newSnake() snake {
 func newSnakeNode() *snakeNode {
 	snakeNode := snakeNode{
 		direction: "up",
-		snakeObj: *&canvas.Rectangle{
+		snakeObj: canvas.Rectangle{
 			FillColor:   green,
 			StrokeColor: color.White,
 			StrokeWidth: 1,

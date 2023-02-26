@@ -166,11 +166,13 @@ func gameLoop() {
 		// Snake dies on touching it's own body.
 		if snakeBodyHit() {
 			gameOver()
+			return
 		}
 
 		// Snake dies on touching the game window.
 		if !windowHit() {
 			gameOver()
+			return
 		}
 
 		// Score goes up by one when snake head touches it.
@@ -250,6 +252,7 @@ func gameOver() {
 	score := container.NewVBox(text1, text2)
 	content := container.New(layout.NewCenterLayout(), score)
 	gameInstance.window.SetContent(content)
+	return
 }
 
 func newSnake() snake {

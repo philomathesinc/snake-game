@@ -35,6 +35,10 @@ Snake:
 - func (s *Snake) Grow() {}
     - This will add a snakeNode to the type Snake.
 
+- func (s *Snake) Accelerate() {}
+    - Increase the game speed, based on our existing design.
+    - Ideally, speed acceleration should be on the snake object only.
+
 Pellet:
 - func New(pos fyne.Position) Pellet{}
     - Creates a circle canvas object and sets the position to pos.
@@ -51,8 +55,24 @@ Score counter:
     - Initializes score to zero
     - Returns a text box with "Score: X"
 - func Increment() {}
-    - 
+    - Increments the score by one.
 
+Game:
+- func bootstrap() []fyne.CanvasObject{}
+    - Snake.New()
+    - Pellet.New()
+    - ScoreCounter.New()
 
-
-- ToDo: check pos does not clash with snake body
+- func Start() {}
+    - bootstrap()
+    - Start below go routines
+        - Check food pellet consumption
+            - Snake.Grow()
+            - Snake.Accelerate()
+            - ScoreCounter.Increment()
+        - Check boundary hit
+            - GameOver()
+        - Check self hit on snake
+            - GameOver()
+        - Snake.Move()
+        - GameWindow.SetContent()

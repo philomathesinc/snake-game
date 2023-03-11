@@ -25,16 +25,34 @@ Snake:
     - Sets length to 1.
     - Sets the position to X and Y.
     
-- func Move() {}
+- func (s *Snake) Move() {}
     - This method just updates the position of all the snake nodes based on the direction set on the head node.
     - Does not update the canvas.
 
-- func HeadPosition() fyne.Position{}
+- func (s *Snake) HeadPosition() fyne.Position{}
     - Can be used in multiple ways to detect food pellet and to detect collision with game window.
 
-- func Grow() {}
+- func (s *Snake) Grow() {}
     - This will add a snakeNode to the type Snake.
 
-FoodPellet:
-- func New(length, width int) FoodPellet{}
-    - Creates a circle canvas object and sets the position to X,Y.
+Pellet:
+- func New(pos fyne.Position) Pellet{}
+    - Creates a circle canvas object and sets the position to pos.
+- func Position() (TBD)
+- ToDo : Once "consumed" by the snake, new food pellet needs to be spawned
+
+Window:
+- func (w *Window) randomPosition() fyne.Position {} 
+    - return random position limited by length and width of window
+- func Boundary() (TBD)
+
+Score counter:
+- func New() ScoreCounter{}
+    - Initializes score to zero
+    - Returns a text box with "Score: X"
+- func Increment() {}
+    - 
+
+
+
+- ToDo: check pos does not clash with snake body

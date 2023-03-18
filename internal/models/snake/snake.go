@@ -1,4 +1,4 @@
-package models
+package snake
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ func newSnakeNode() *node {
 	return &snakeNode
 }
 
-func NewSnake() Snake {
+func New() Snake {
 	snake := Snake{}
 	snake.head = newSnakeNode()
 	snake.tail = snake.head

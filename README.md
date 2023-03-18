@@ -49,8 +49,9 @@ Window:
     - return random position limited by length and width of window
 - func (w *Window) Refresh() {}
     - g.window.Canvas().Refresh(&tmp.canvasObj)
-- func (w *Window) UpdateContent() {}
-    - 
+- func (w *Window) UpdateContent(objs ...fyne.CanvasObject) {}
+    - Update window content
+- func (w *Window) CenterPosition() fyne.Position {}
 - func Boundary() (TBD)
 
 Score counter:

@@ -9,15 +9,16 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 
-	"github.com/PhilomathesInc/snake-game/internal/constants"
 	"github.com/PhilomathesInc/snake-game/internal/models"
+	"github.com/PhilomathesInc/snake-game/internal/models/snake"
+	"github.com/PhilomathesInc/snake-game/internal/models/window"
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-	w := models.NewGameWindow(app.New())
+	w := window.New(app.New())
 
-	s := models.NewSnake()
+	s := snake.New()
 	scoreDisplayBox := canvas.NewText(fmt.Sprintf("Score: %d", 0), color.White)
 	g := models.NewGame(
 		w,
@@ -29,8 +30,8 @@ func init() {
 	g.Pellet = p
 
 	// Put the Snake's head in the center of the game space
-	s.Move(constants.CenterGamePixel)
-	w.UpdateContent(&g, &s)
+	// s.Move(constants.CenterGamePixel)
+	// w.UpdateContent(&g, &s)
 	w.Canvas().SetOnTypedKey(g.SteerSnake)
 
 	go g.GameLoop()

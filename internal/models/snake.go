@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -36,6 +37,18 @@ func newSnakeNode() *node {
 	return &snakeNode
 }
 
+func NewSnake() Snake {
+	snake := Snake{}
+	snake.head = newSnakeNode()
+	snake.tail = snake.head
+	snake.length = 1
+	return snake
+}
+
+func (s *Snake) HeadPosition() fyne.Position {
+	return s.head.canvasObj.Position()
+}
+
 func (s *Snake) SnakeBodyHit() bool {
 	for node := s.head.next; node != nil; node = node.next {
 		if s.head.canvasObj.Position() == node.canvasObj.Position() {
@@ -59,10 +72,31 @@ func (s *Snake) BodyPositions() []fyne.CanvasObject {
 	return objs
 }
 
-func NewSnake() Snake {
-	snake := Snake{}
-	snake.head = newSnakeNode()
-	snake.tail = snake.head
+func (s *Snake) updateSnakeBody(headOldPos fyne.Position) {
+	oldPos := headOldPos
+	tmp := s.head.next
 
-	return snake
+	for tmp != nil {
+		olderPosition := tmp.canvasObj.Position()
+		tmp.canvasObj.Move(oldPos)
+		oldPos = olderPosition
+		// ToDo: g.window.Canvas().Refresh(&tmp.canvasObj)
+		tmp = tmp.next
+	}
+
+	i := 0
+	for node := s.head; node != nil; node = node.next {
+		fmt.Printf("node %v: %v, %v\n", i, node.canvasObj.Position().X, node.canvasObj.Position().Y)
+		i++
+	}
+}
+
+func (s *Snake) Grow() {
+	newNode := newSnakeNode()
+	s.tail.next = newNode
+	s.tail = s.tail.next
+	s.length++
+
+	s.updateSnakeBody(s.HeadPosition())
+	// ToDo: call window.UpdateContent
 }

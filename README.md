@@ -21,11 +21,10 @@
         - [x] Score display widget
 
 Snake:
-- func New(length, width int) Snake {}
+- func New() Snake {}
     - Sets length to 1.
-    - Sets the position to X and Y.
     
-- func (s *Snake) Move() {}
+- func (s *Snake) Move(fyne.Position) {}
     - This method just updates the position of all the snake nodes based on the direction set on the head node.
     - Does not update the canvas.
 
@@ -48,6 +47,10 @@ Pellet:
 Window:
 - func (w *Window) randomPosition() fyne.Position {} 
     - return random position limited by length and width of window
+- func (w *Window) Refresh() {}
+    - g.window.Canvas().Refresh(&tmp.canvasObj)
+- func (w *Window) UpdateContent() {}
+    - 
 - func Boundary() (TBD)
 
 Score counter:
@@ -68,6 +71,7 @@ Game:
     - Start below go routines
         - Check food pellet consumption
             - Snake.Grow()
+            - Window.UpdateContent(game, snake)
             - Snake.Accelerate()
             - ScoreCounter.Increment()
         - Check boundary hit

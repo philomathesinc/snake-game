@@ -140,24 +140,6 @@ func (g *Game) GameLoop() {
 	}
 }
 
-func (g *Game) increaseSnakeLength() {
-	snake := g.SnakeInstance
-
-	newNode := newSnakeNode()
-	snake.tail.next = newNode
-	snake.tail = snake.tail.next
-	snake.length++
-
-	g.updateSnakeBody(snake.head.canvasObj.Position())
-	g.SnakeInstance = snake
-
-	objs := g.SnakeInstance.BodyPositions()
-	objs = append(objs, g.Pellet)
-	objs = append(objs, g.ScoreDisplayBox)
-	g.window.UpdateContent(g, &snake)
-	g.window.SetContent(container.NewWithoutLayout(objs...))
-}
-
 func (g *Game) pelletHit() bool {
 	return g.SnakeInstance.head.canvasObj.Position() == g.Pellet.Position()
 }
@@ -169,23 +151,4 @@ func (g *Game) windowHit() bool {
 func (g *Game) gameOver() {
 	fmt.Println("Game over!!")
 	os.Exit(0)
-}
-
-func (g *Game) updateSnakeBody(headOldPos fyne.Position) {
-	oldPos := headOldPos
-	tmp := g.SnakeInstance.head.next
-
-	for tmp != nil {
-		olderPosition := tmp.canvasObj.Position()
-		tmp.canvasObj.Move(oldPos)
-		oldPos = olderPosition
-		g.window.Canvas().Refresh(&tmp.canvasObj)
-		tmp = tmp.next
-	}
-
-	i := 0
-	for node := g.SnakeInstance.head; node != nil; node = node.next {
-		fmt.Printf("node %v: %v, %v\n", i, node.canvasObj.Position().X, node.canvasObj.Position().Y)
-		i++
-	}
 }

@@ -11,9 +11,12 @@ type Pellet struct {
 	*canvas.Circle
 }
 
-func New(s fyne.Size, p fyne.Position) *Pellet {
+func New(s int, p fyne.Position) *Pellet {
 	c := canvas.NewCircle(color.White)
-	c.Resize(s)
+	c.Resize(fyne.NewSize(
+		float32(s),
+		float32(s),
+	))
 	c.Move(p)
 
 	return &Pellet{

@@ -53,7 +53,7 @@ func (s *Snake) HeadPosition() fyne.Position {
 
 func (s *Snake) SnakeBodyHit() bool {
 	for node := s.head.next; node != nil; node = node.next {
-		if s.head.canvasObj.Position() == node.canvasObj.Position() {
+		if s.HeadPosition() == node.canvasObj.Position() {
 			return true
 		}
 	}

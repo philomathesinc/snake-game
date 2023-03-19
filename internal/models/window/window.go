@@ -16,8 +16,10 @@ type Window struct {
 }
 
 func (w *Window) RandomPosition() fyne.Position {
-	var i fyne.Position
-	var pixelCountLimit = length / singlePixel
+	var (
+		i               fyne.Position
+		pixelCountLimit = length / singlePixel
+	)
 	xPos := utils.RandomNumber(pixelCountLimit)
 	yPos := utils.RandomNumber(pixelCountLimit)
 	i = fyne.NewPos(float32(xPos), float32(yPos))

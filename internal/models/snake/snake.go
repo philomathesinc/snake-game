@@ -38,13 +38,13 @@ func (s *Snake) newSnakeNode() *node {
 	return &snakeNode
 }
 
-func New(pixelSize int) Snake {
+func New(pixelSize int) *Snake {
 	snake := Snake{}
 	snake.pixelSize = float32(pixelSize)
 	snake.head = snake.newSnakeNode()
 	snake.tail = snake.head
 	snake.length = 1
-	return snake
+	return &snake
 }
 
 func (s *Snake) HeadPosition() fyne.Position {

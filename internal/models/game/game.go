@@ -20,30 +20,44 @@ import (
 )
 
 type Game struct {
-	window window.Window
-	snake  snake.Snake
-	score  scorecounter.ScoreCounter
-	pellet pellet.Pellet
+	window *window.Window
+	snake  *snake.Snake
+	score  *scorecounter.ScoreCounter
+	pellet *pellet.Pellet
 }
 
-func bootstrap(w window.Window) []fyne.CanvasObject {
+func New() *Game {
+	w := window.New(app.New())
 	s := snake.New(w.PixelSize())
 	p := pellet.New(w.PixelSize(), w.RandomPosition())
 	sc := scorecounter.New()
-	objs := s.BodyPositions()
-	objs = append(objs, p.Display(), sc.Display())
+
+	return &Game{
+		window: w,
+		snake:  s,
+		score:  sc,
+		pellet: p,
+	}
+
+}
+
+func (g *Game) canvasObjects() []fyne.CanvasObject {
+
+	objs := g.snake.BodyPositions()
+	objs = append(objs, g.pellet.Display(), g.score.Display())
 	return objs
 }
 
 func Start() {
 	// Window initialization
 	rand.Seed(time.Now().UnixNano())
-	w := window.New(app.New())
-	objs := bootstrap(w)
-	w.UpdateContent(objs...)
+
+	g := New()
+	g.window.UpdateContent(g.canvasObjects()...)
 	go func() {
-		if p.pelletHit(s) {
-			g.Pellet = FoodPellet(g)
+		if g.pellet.Hit(g.snake.HeadPosition()) {
+			g.pellet := pellet.New(w.PixelSize(), w.RandomPosition())
+			g.pellet = FoodPellet(g)
 			g.score++
 			g.ScoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", g.score), color.White)
 			g.window.SetContent(container.NewWithoutLayout(&g.SnakeInstance.head.canvasObj, g.Pellet, g.ScoreDisplayBox))
@@ -71,19 +85,6 @@ func init() {
 
 	go g.GameLoop()
 	w.ShowAndRun()
-}
-
-func NewGame(
-	window GameWindow,
-	snakeInstance Snake, score uint, scoreDisplayBox *canvas.Text,
-) Game {
-	return Game{
-		window:          window,
-		SnakeInstance:   snakeInstance,
-		score:           score,
-		Pellet:          nil,
-		ScoreDisplayBox: scoreDisplayBox,
-	}
 }
 
 func (g *Game) SteerSnake(ev *fyne.KeyEvent) {

@@ -27,7 +27,7 @@ func (w *Window) RandomPosition() fyne.Position {
 	return i
 }
 
-func New(a fyne.App) Window {
+func New(a fyne.App) *Window {
 	w := a.NewWindow("Snake Game")
 	w.Resize(fyne.Size{
 		Width:  length,
@@ -35,7 +35,7 @@ func New(a fyne.App) Window {
 	})
 	w.CenterOnScreen()
 
-	return Window{w}
+	return &Window{w}
 }
 
 func (w *Window) UpdateContent(objs ...fyne.CanvasObject) {

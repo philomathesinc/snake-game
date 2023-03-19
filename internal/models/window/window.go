@@ -49,3 +49,12 @@ func (w *Window) PixelSize() int {
 func (w *Window) CenterPosition() fyne.Position {
 	return fyne.NewPos((length-singlePixel)/2, (length-singlePixel)/2)
 }
+
+func (w *Window) Hit(p fyne.Position) bool {
+	right := p.Y == length
+	left := p.X == length
+	top := p.X < 0
+	bottom := p.Y < 0
+
+	return right || left || top || bottom
+}

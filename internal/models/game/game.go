@@ -56,12 +56,19 @@ func Start() {
 	g.window.UpdateContent(g.canvasObjects()...)
 	go func() {
 		if g.pellet.Hit(g.snake.HeadPosition()) {
-			g.pellet := pellet.New(w.PixelSize(), w.RandomPosition())
-			g.pellet = FoodPellet(g)
-			g.score++
-			g.ScoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", g.score), color.White)
-			g.window.SetContent(container.NewWithoutLayout(&g.SnakeInstance.head.canvasObj, g.Pellet, g.ScoreDisplayBox))
-			g.increaseSnakeLength()
+			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
+			g.snake.Grow()
+			g.score.Increment()
+
+			objs := g.snake.BodyPositions()
+			objs = append(objs, g.pellet.Display(), g.score.Display())
+			g.window.UpdateContent(objs...)
+		}
+	}()
+
+	go func() {
+		if g.window.Hit(g.snake.HeadPosition()) {
+			g.gameOver()
 		}
 	}()
 }
@@ -191,10 +198,6 @@ func (g *Game) GameLoop() {
 			g.window.Canvas().Refresh(&node.canvasObj)
 		}
 	}
-}
-
-func (g *Game) windowHit() bool {
-	return ((g.SnakeInstance.head.canvasObj.Position().Y == constants.FinalSpaceHeight) || (g.SnakeInstance.head.canvasObj.Position().X == constants.FinalSpaceWidth) || (g.SnakeInstance.head.canvasObj.Position().X < 0) || (g.SnakeInstance.head.canvasObj.Position().Y < 0))
 }
 
 func (g *Game) gameOver() {

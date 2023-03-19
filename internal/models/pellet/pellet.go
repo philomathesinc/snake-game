@@ -23,3 +23,11 @@ func New(s int, p fyne.Position) *Pellet {
 		c,
 	}
 }
+
+func (p *Pellet) Display() fyne.CanvasObject {
+	return p.Circle
+}
+
+func (p *Pellet) Hit(pos fyne.Position) bool {
+	return pos == p.Position()
+}

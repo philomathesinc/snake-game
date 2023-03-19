@@ -13,31 +13,43 @@ import (
 	"fyne.io/fyne/v2/container"
 	"github.com/PhilomathesInc/snake-game/internal/constants"
 	"github.com/PhilomathesInc/snake-game/internal/models/pellet"
+	"github.com/PhilomathesInc/snake-game/internal/models/scorecounter"
 	"github.com/PhilomathesInc/snake-game/internal/models/snake"
 	"github.com/PhilomathesInc/snake-game/internal/models/window"
 	"github.com/PhilomathesInc/snake-game/internal/utils"
 )
 
 type Game struct {
-	window          GameWindow
-	SnakeInstance   Snake
-	score           uint
-	Pellet          fyne.CanvasObject
-	ScoreDisplayBox *canvas.Text
+	window window.Window
+	snake  snake.Snake
+	score  scorecounter.ScoreCounter
+	pellet pellet.Pellet
 }
 
-func bootstrap() []fyne.CanvasObject {
-	rand.Seed(time.Now().UnixNano())
-	w := window.New(app.New())
+func bootstrap(w window.Window) []fyne.CanvasObject {
 	s := snake.New(w.PixelSize())
 	p := pellet.New(w.PixelSize(), w.RandomPosition())
-	sc := scoreCounter.New()
+	sc := scorecounter.New()
+	objs := s.BodyPositions()
+	objs = append(objs, p.Display(), sc.Display())
+	return objs
 }
 
 func Start() {
 	// Window initialization
-
-	bootstrap()
+	rand.Seed(time.Now().UnixNano())
+	w := window.New(app.New())
+	objs := bootstrap(w)
+	w.UpdateContent(objs...)
+	go func() {
+		if p.pelletHit(s) {
+			g.Pellet = FoodPellet(g)
+			g.score++
+			g.ScoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", g.score), color.White)
+			g.window.SetContent(container.NewWithoutLayout(&g.SnakeInstance.head.canvasObj, g.Pellet, g.ScoreDisplayBox))
+			g.increaseSnakeLength()
+		}
+	}()
 }
 
 func init() {
@@ -178,10 +190,6 @@ func (g *Game) GameLoop() {
 			g.window.Canvas().Refresh(&node.canvasObj)
 		}
 	}
-}
-
-func (g *Game) pelletHit() bool {
-	return g.SnakeInstance.head.canvasObj.Position() == g.Pellet.Position()
 }
 
 func (g *Game) windowHit() bool {

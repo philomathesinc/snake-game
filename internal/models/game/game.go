@@ -2,21 +2,16 @@ package game
 
 import (
 	"fmt"
-	"image/color"
 	"math/rand"
 	"os"
 	"time"
 
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"github.com/PhilomathesInc/snake-game/internal/constants"
 	"github.com/PhilomathesInc/snake-game/internal/models/pellet"
 	"github.com/PhilomathesInc/snake-game/internal/models/scorecounter"
 	"github.com/PhilomathesInc/snake-game/internal/models/snake"
 	"github.com/PhilomathesInc/snake-game/internal/models/window"
-	"github.com/PhilomathesInc/snake-game/internal/utils"
 )
 
 type Game struct {
@@ -51,9 +46,11 @@ func (g *Game) canvasObjects() []fyne.CanvasObject {
 func Start() {
 	// Window initialization
 	rand.Seed(time.Now().UnixNano())
-
 	g := New()
+	g.window.Canvas().SetOnTypedKey(g.steerSnake)
 	g.window.UpdateContent(g.canvasObjects()...)
+
+	// Score goes up by one when snake head touches it.
 	go func() {
 		if g.pellet.Hit(g.snake.HeadPosition()) {
 			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
@@ -66,141 +63,71 @@ func Start() {
 		}
 	}()
 
+	// Snake dies on touching the game window
 	go func() {
 		if g.window.Hit(g.snake.HeadPosition()) {
-			g.gameOver()
+			over()
 		}
 	}()
-}
 
-func init() {
-	s := snake.New()
-	scoreDisplayBox := canvas.NewText(fmt.Sprintf("Score: %d", 0), color.White)
-	g := models.NewGame(
-		w,
-		s,
-		0,
-		scoreDisplayBox)
-
-	p := models.FoodPellet(&g)
-	g.Pellet = p
-
-	// Put the Snake's head in the center of the game space
-	// s.Move(constants.CenterGamePixel)
-	// w.UpdateContent(&g, &s)
-	w.Canvas().SetOnTypedKey(g.SteerSnake)
-
-	go g.GameLoop()
-	w.ShowAndRun()
-}
-
-func (g *Game) SteerSnake(ev *fyne.KeyEvent) {
-	switch ev.Name {
-	case fyne.KeyW:
-		g.SnakeInstance.head.direction = "up"
-	case fyne.KeyUp:
-		g.SnakeInstance.head.direction = "up"
-	case fyne.KeyS:
-		g.SnakeInstance.head.direction = "down"
-	case fyne.KeyDown:
-		g.SnakeInstance.head.direction = "down"
-	case fyne.KeyA:
-		g.SnakeInstance.head.direction = "left"
-	case fyne.KeyLeft:
-		g.SnakeInstance.head.direction = "left"
-	case fyne.KeyD:
-		g.SnakeInstance.head.direction = "right"
-	case fyne.KeyRight:
-		g.SnakeInstance.head.direction = "right"
-	}
-}
-
-func FoodPellet(g *Game) fyne.CanvasObject {
-	pellet := *canvas.NewCircle(color.White)
-	pellet.Resize(fyne.NewSize(constants.SinglePix, constants.SinglePix))
-
-	pellet.Move(g.randomPositionInGameWindow())
-
-	return &pellet
-}
-
-func (g *Game) randomPositionInGameWindow() fyne.Position {
-	var i fyne.Position
-	xPos := utils.RandomNumber(constants.PixelCountLimit)
-	yPos := utils.RandomNumber(constants.PixelCountLimit)
-	i = fyne.NewPos(float32(xPos), float32(yPos))
-	for node := g.SnakeInstance.head; node != nil; node = node.next {
-		if i == node.canvasObj.Position() {
-			xPos = utils.RandomNumber(constants.PixelCountLimit)
-			yPos = utils.RandomNumber(constants.PixelCountLimit)
-			i = fyne.NewPos(float32(xPos), float32(yPos))
+	// Snake dies on touching it's own body.
+	go func() {
+		if g.snake.SnakeBodyHit() {
+			over()
 		}
-	}
-	fmt.Println("food pellet position:", i)
-	return i
+	}()
+
+	go g.gameLoop()
+	g.window.ShowAndRun()
 }
 
-func (g *Game) GameLoop() {
+func (g *Game) steerSnake(ev *fyne.KeyEvent) {
+	switch ev.Name {
+	case fyne.KeyW, fyne.KeyUp:
+		g.snake.SetDirection("up")
+	case fyne.KeyS, fyne.KeyDown:
+		g.snake.SetDirection("down")
+	case fyne.KeyA, fyne.KeyLeft:
+		g.snake.SetDirection("left")
+	case fyne.KeyD, fyne.KeyRight:
+		g.snake.SetDirection("right")
+	}
+}
+
+func (g *Game) gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 200)
-
-		switch g.SnakeInstance.head.direction {
-		case "up":
-			oldPos := g.SnakeInstance.head.canvasObj.Position()
-			// headNode move
-			newPos := fyne.NewPos(g.SnakeInstance.head.canvasObj.Position().X, g.SnakeInstance.head.canvasObj.Position().Y-constants.SinglePix)
-			g.SnakeInstance.head.canvasObj.Move(newPos)
-			// rest of the snake body move
-			g.updateSnakeBody(oldPos)
-		case "down":
-			oldPos := g.SnakeInstance.head.canvasObj.Position()
-			// headNode move
-			newPos := fyne.NewPos(g.SnakeInstance.head.canvasObj.Position().X, g.SnakeInstance.head.canvasObj.Position().Y+constants.SinglePix)
-			g.SnakeInstance.head.canvasObj.Move(newPos)
-			// rest of the snake body move
-			g.updateSnakeBody(oldPos)
-		case "left":
-			oldPos := g.SnakeInstance.head.canvasObj.Position()
-			// headNode move
-			newPos := fyne.NewPos(g.SnakeInstance.head.canvasObj.Position().X-constants.SinglePix, g.SnakeInstance.head.canvasObj.Position().Y)
-			g.SnakeInstance.head.canvasObj.Move(newPos)
-			// rest of the snake body move
-			g.updateSnakeBody(oldPos)
-		case "right":
-			oldPos := g.SnakeInstance.head.canvasObj.Position()
-			// headNode move
-			newPos := fyne.NewPos(g.SnakeInstance.head.canvasObj.Position().X+constants.SinglePix, g.SnakeInstance.head.canvasObj.Position().Y)
-			g.SnakeInstance.head.canvasObj.Move(newPos)
-			// rest of the snake body move
-			g.updateSnakeBody(oldPos)
-		}
-
-		// Snake dies on touching it's own body.
-		if g.SnakeInstance.SnakeBodyHit() {
-			g.gameOver()
-		}
-
-		// Snake dies on touching the game window.
-		if g.windowHit() {
-			g.gameOver()
-		}
-
-		// Score goes up by one when snake head touches it.
-		if g.pelletHit() {
-			g.Pellet = FoodPellet(g)
-			g.score++
-			g.ScoreDisplayBox = canvas.NewText(fmt.Sprintf("Score: %d", g.score), color.White)
-			g.window.SetContent(container.NewWithoutLayout(&g.SnakeInstance.head.canvasObj, g.Pellet, g.ScoreDisplayBox))
-			g.increaseSnakeLength()
-		}
-
-		for node := g.SnakeInstance.head; node != nil; node = node.next {
-			g.window.Canvas().Refresh(&node.canvasObj)
-		}
+		g.moveSnake()
 	}
 }
 
-func (g *Game) gameOver() {
+func (g *Game) moveSnake() {
+	// move headNode
+	var newPos fyne.Position
+	oldPos := g.snake.HeadPosition()
+	switch g.snake.Direction() {
+	case "up":
+		newPos = fyne.NewPos(g.snake.HeadPosition().X, g.snake.HeadPosition().Y-float32(g.window.PixelSize()))
+	case "down":
+		newPos = fyne.NewPos(g.snake.HeadPosition().X, g.snake.HeadPosition().Y+float32(g.window.PixelSize()))
+	case "left":
+		newPos = fyne.NewPos(g.snake.HeadPosition().X-float32(g.window.PixelSize()), g.snake.HeadPosition().Y)
+	case "right":
+		newPos = fyne.NewPos(g.snake.HeadPosition().X+float32(g.window.PixelSize()), g.snake.HeadPosition().Y)
+	}
+
+	// ToDo: Combine below functions in snake model
+	g.snake.Move(newPos)
+	// rest of the snake body move
+	g.updateSnakeBody(oldPos)
+
+	// ToDo: Refresh should be in window package
+	for node := g.SnakeInstance.head; node != nil; node = node.next {
+		g.window.Canvas().Refresh(&node.canvasObj)
+	}
+}
+
+func over() {
 	fmt.Println("Game over!!")
 	os.Exit(0)
 }

@@ -40,6 +40,9 @@ func New(a fyne.App) *Window {
 
 func (w *Window) UpdateContent(objs ...fyne.CanvasObject) {
 	w.SetContent(container.NewWithoutLayout(objs...))
+	for _, obj := range objs {
+		obj.Refresh()
+	}
 }
 
 func (w *Window) PixelSize() int {

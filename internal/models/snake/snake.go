@@ -51,6 +51,14 @@ func (s *Snake) HeadPosition() fyne.Position {
 	return s.head.canvasObj.Position()
 }
 
+func (s *Snake) Direction() string {
+	return s.head.direction
+}
+
+func (s *Snake) SetDirection(d string) {
+	s.head.direction = d
+}
+
 func (s *Snake) SnakeBodyHit() bool {
 	for node := s.head.next; node != nil; node = node.next {
 		if s.HeadPosition() == node.canvasObj.Position() {
@@ -100,5 +108,4 @@ func (s *Snake) Grow() {
 	s.length++
 
 	s.updateSnakeBody(s.HeadPosition())
-	// ToDo: call window.UpdateContent
 }

@@ -17,12 +17,13 @@ type node struct {
 }
 
 type Snake struct {
-	head   *node
-	tail   *node
-	length int
+	head      *node
+	tail      *node
+	length    int
+	pixelSize float32
 }
 
-func newSnakeNode() *node {
+func (s *Snake) newSnakeNode() *node {
 	snakeNode := node{
 		direction: "up",
 		canvasObj: canvas.Rectangle{
@@ -32,14 +33,15 @@ func newSnakeNode() *node {
 		},
 	}
 	snakeNode.next = nil
-	snakeNode.canvasObj.Resize(fyne.NewSize(constants.SinglePix, constants.SinglePix))
+	snakeNode.canvasObj.Resize(fyne.NewSize(s.pixelSize, s.pixelSize))
 
 	return &snakeNode
 }
 
-func New() Snake {
+func New(pixelSize int) Snake {
 	snake := Snake{}
-	snake.head = newSnakeNode()
+	snake.pixelSize = float32(pixelSize)
+	snake.head = snake.newSnakeNode()
 	snake.tail = snake.head
 	snake.length = 1
 	return snake
@@ -92,7 +94,7 @@ func (s *Snake) updateSnakeBody(headOldPos fyne.Position) {
 }
 
 func (s *Snake) Grow() {
-	newNode := newSnakeNode()
+	newNode := s.newSnakeNode()
 	s.tail.next = newNode
 	s.tail = s.tail.next
 	s.length++

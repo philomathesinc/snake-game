@@ -65,6 +65,7 @@ func Start() {
 	go func() {
 		if g.window.Hit(g.snake.HeadPosition()) {
 			over()
+			return
 		}
 	}()
 
@@ -72,6 +73,7 @@ func Start() {
 	go func() {
 		if g.snake.SnakeBodyHit() {
 			over()
+			return
 		}
 	}()
 

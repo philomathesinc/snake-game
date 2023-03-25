@@ -23,7 +23,7 @@ type Game struct {
 
 func New() *Game {
 	w := window.New(app.New())
-	s := snake.New(w.PixelSize())
+	s := snake.New(w.PixelSize(), w.RandomPosition())
 	p := pellet.New(w.PixelSize(), w.RandomPosition())
 	sc := scorecounter.New()
 
@@ -96,33 +96,43 @@ func (g *Game) gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 200)
 		g.moveSnake()
+		g.window.UpdateContent(g.canvasObjects()...)
 	}
 }
 
 func (g *Game) moveSnake() {
 	// move headNode
 	var newPos fyne.Position
-	// oldPos := g.snake.HeadPosition()
 	switch g.snake.Direction() {
 	case "up":
-		newPos = fyne.NewPos(g.snake.HeadPosition().X, g.snake.HeadPosition().Y-float32(g.window.PixelSize()))
+		newPos = fyne.NewPos(
+			g.snake.HeadPosition().X,
+			g.snake.HeadPosition().Y-float32(g.window.PixelSize()),
+		)
 	case "down":
-		newPos = fyne.NewPos(g.snake.HeadPosition().X, g.snake.HeadPosition().Y+float32(g.window.PixelSize()))
+		newPos = fyne.NewPos(
+			g.snake.HeadPosition().X,
+			g.snake.HeadPosition().Y+float32(g.window.PixelSize()),
+		)
 	case "left":
-		newPos = fyne.NewPos(g.snake.HeadPosition().X-float32(g.window.PixelSize()), g.snake.HeadPosition().Y)
+		newPos = fyne.NewPos(
+			g.snake.HeadPosition().X-float32(g.window.PixelSize()),
+			g.snake.HeadPosition().Y,
+		)
 	case "right":
-		newPos = fyne.NewPos(g.snake.HeadPosition().X+float32(g.window.PixelSize()), g.snake.HeadPosition().Y)
+		newPos = fyne.NewPos(
+			g.snake.HeadPosition().X+float32(g.window.PixelSize()),
+			g.snake.HeadPosition().Y,
+		)
 	}
 
-	// ToDo: Combine below functions in snake model
 	g.snake.Move(newPos)
-	// rest of the snake body move
-	// g.updateSnakeBody(oldPos)
 
 	// ToDo: Refresh should be in window package
-	for node := g.SnakeInstance.head; node != nil; node = node.next {
-		g.window.Canvas().Refresh(&node.canvasObj)
-	}
+	// for node := g.SnakeInstance.head; node != nil; node = node.next {
+	// 	g.window.Canvas().Refresh(&node.canvasObj)
+	// }
+
 }
 
 func over() {

@@ -38,7 +38,7 @@ func (s *Snake) newSnakeNode() *node {
 	return &snakeNode
 }
 
-func New(pixelSize int) *Snake {
+func New(pixelSize int, position fyne.Position) *Snake {
 	snake := Snake{}
 	snake.pixelSize = float32(pixelSize)
 	snake.head = snake.newSnakeNode()
@@ -81,6 +81,7 @@ func (s *Snake) BodyPositions() []fyne.CanvasObject {
 func (s *Snake) Move(pos fyne.Position) {
 	oldPos := s.HeadPosition()
 	s.head.canvasObj.Move(pos)
+	// rest of the snake body move
 	s.updateSnakeBody(oldPos)
 }
 

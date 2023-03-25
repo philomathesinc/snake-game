@@ -1,9 +1,10 @@
 package window
 
 import (
+	"math/rand"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"github.com/PhilomathesInc/snake-game/internal/utils"
 )
 
 const (
@@ -15,13 +16,24 @@ type Window struct {
 	fyne.Window
 }
 
+func generateRandomNumber(limit int) int {
+	var i int
+	i = rand.Intn(limit)
+	for i <= 1 {
+		i = rand.Intn(limit)
+	}
+	return i * singlePixel
+}
+
 func (w *Window) RandomPosition() fyne.Position {
+
 	var (
 		i               fyne.Position
 		pixelCountLimit = length / singlePixel
 	)
-	xPos := utils.RandomNumber(pixelCountLimit)
-	yPos := utils.RandomNumber(pixelCountLimit)
+
+	xPos := generateRandomNumber(pixelCountLimit)
+	yPos := generateRandomNumber(pixelCountLimit)
 	i = fyne.NewPos(float32(xPos), float32(yPos))
 
 	return i

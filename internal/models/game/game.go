@@ -23,8 +23,12 @@ type Game struct {
 
 func New() *Game {
 	w := window.New(app.New())
-	s := snake.New(w.PixelSize(), w.RandomPosition())
-	p := pellet.New(w.PixelSize(), w.RandomPosition())
+	snakePos := w.RandomPosition()
+	pelletPos := w.RandomPosition()
+	s := snake.New(w.PixelSize(), snakePos)
+	p := pellet.New(w.PixelSize(), pelletPos)
+
+	fmt.Printf("Snake pos: %v, Pellet pos: %v", snakePos, pelletPos)
 	sc := scorecounter.New()
 
 	return &Game{
@@ -65,7 +69,6 @@ func Start() {
 	go func() {
 		if g.window.Hit(g.snake.HeadPosition()) {
 			over()
-			return
 		}
 	}()
 
@@ -73,7 +76,6 @@ func Start() {
 	go func() {
 		if g.snake.SnakeBodyHit() {
 			over()
-			return
 		}
 	}()
 

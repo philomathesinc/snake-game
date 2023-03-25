@@ -99,7 +99,7 @@ func (s *Snake) updateSnakeBody(headOldPos fyne.Position) {
 
 	i := 0
 	for node := s.head; node != nil; node = node.next {
-		fmt.Printf("node %v: %v, %v\n", i, node.canvasObj.Position().X, node.canvasObj.Position().Y)
+		fmt.Printf("node %v: %v\n", i, node.canvasObj.Position())
 		i++
 	}
 }

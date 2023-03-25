@@ -23,7 +23,7 @@ type Game struct {
 
 func New() *Game {
 	w := window.New(app.New())
-	snakePos := w.RandomPosition()
+	snakePos := w.CenterPosition()
 	pelletPos := w.RandomPosition()
 	s := snake.New(w.PixelSize(), snakePos)
 	p := pellet.New(w.PixelSize(), pelletPos)
@@ -67,7 +67,9 @@ func Start() {
 
 	// Snake dies on touching the game window
 	go func() {
+		fmt.Println("DEBUG: before g.window.Hit")
 		if g.window.Hit(g.snake.HeadPosition()) {
+			fmt.Println("DEBUG: inside g.window.Hit")
 			over()
 		}
 	}()

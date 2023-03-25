@@ -53,8 +53,7 @@ func New(a fyne.App) *Window {
 func (w *Window) UpdateContent(objs ...fyne.CanvasObject) {
 	w.SetContent(container.NewWithoutLayout(objs...))
 	for _, obj := range objs {
-		// obj.Refresh()
-		w.Canvas().Refresh(obj)
+		obj.Refresh()
 	}
 }
 
@@ -67,10 +66,11 @@ func (w *Window) CenterPosition() fyne.Position {
 }
 
 func (w *Window) Hit(p fyne.Position) bool {
-	right := p.Y == length
-	left := p.X == length
-	top := p.X < 0
-	bottom := p.Y < 0
+	right := p.Y >= length
+	left := p.X >= length
+	top := p.X <= 0
+	bottom := p.Y <= 0
 
-	return right || left || top || bottom
+	// return !((gameInstance.snakeInstance.head.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.head.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.head.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.head.snakeObj.Position().Y < 0))
+	return (right || left || top || bottom)
 }

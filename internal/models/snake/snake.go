@@ -1,7 +1,6 @@
 package snake
 
 import (
-	"fmt"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -42,7 +41,7 @@ func New(pixelSize int, position fyne.Position) *Snake {
 	snake := Snake{}
 	snake.pixelSize = float32(pixelSize)
 	snake.head = snake.newSnakeNode()
-	snake.Move(position)
+	snake.head.canvasObj.Move(position)
 	snake.tail = snake.head
 	snake.length = 1
 	return &snake
@@ -60,7 +59,7 @@ func (s *Snake) SetDirection(d string) {
 	s.head.direction = d
 }
 
-func (s *Snake) SnakeBodyHit() bool {
+func (s *Snake) BodyHit() bool {
 	for node := s.head.next; node != nil; node = node.next {
 		if s.HeadPosition() == node.canvasObj.Position() {
 			return true
@@ -79,9 +78,34 @@ func (s *Snake) BodyPositions() []fyne.CanvasObject {
 	return objs
 }
 
-func (s *Snake) Move(pos fyne.Position) {
+func (s *Snake) Move() {
+	var newPos fyne.Position
 	oldPos := s.HeadPosition()
-	s.head.canvasObj.Move(pos)
+	switch s.Direction() {
+	case "up":
+		newPos = fyne.NewPos(
+			s.HeadPosition().X,
+			s.HeadPosition().Y-float32(s.pixelSize),
+		)
+	case "down":
+		newPos = fyne.NewPos(
+			s.HeadPosition().X,
+			s.HeadPosition().Y+float32(s.pixelSize),
+		)
+	case "left":
+		newPos = fyne.NewPos(
+			s.HeadPosition().X-float32(s.pixelSize),
+			s.HeadPosition().Y,
+		)
+	case "right":
+		newPos = fyne.NewPos(
+			s.HeadPosition().X+float32(s.pixelSize),
+			s.HeadPosition().Y,
+		)
+	}
+
+	// move the head
+	s.head.canvasObj.Move(newPos)
 	// rest of the snake body move
 	s.updateSnakeBody(oldPos)
 }
@@ -94,14 +118,7 @@ func (s *Snake) updateSnakeBody(headOldPos fyne.Position) {
 		olderPosition := tmp.canvasObj.Position()
 		tmp.canvasObj.Move(oldPos)
 		oldPos = olderPosition
-		// ToDo: g.window.Canvas().Refresh(&tmp.canvasObj)
 		tmp = tmp.next
-	}
-
-	i := 0
-	for node := s.head; node != nil; node = node.next {
-		fmt.Printf("node %v: %v\n", i, node.canvasObj.Position())
-		i++
 	}
 }
 
@@ -111,5 +128,5 @@ func (s *Snake) Grow() {
 	s.tail = s.tail.next
 	s.length++
 
-	s.updateSnakeBody(s.HeadPosition())
+	s.Move()
 }

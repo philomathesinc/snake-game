@@ -1,13 +1,14 @@
 package game
 
 import (
-	"fmt"
-	"math/rand"
-	"os"
+	"context"
+	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"github.com/PhilomathesInc/snake-game/internal/models/pellet"
 	"github.com/PhilomathesInc/snake-game/internal/models/scorecounter"
 	"github.com/PhilomathesInc/snake-game/internal/models/snake"
@@ -15,20 +16,18 @@ import (
 )
 
 type Game struct {
-	window *window.Window
-	snake  *snake.Snake
-	score  *scorecounter.ScoreCounter
-	pellet *pellet.Pellet
+	window   *window.Window
+	snake    *snake.Snake
+	score    *scorecounter.ScoreCounter
+	pellet   *pellet.Pellet
+	isPaused bool
+	isOver   bool
 }
 
-func New() *Game {
-	w := window.New(app.New())
-	snakePos := w.CenterPosition()
-	pelletPos := w.RandomPosition()
-	s := snake.New(w.PixelSize(), snakePos)
-	p := pellet.New(w.PixelSize(), pelletPos)
-
-	fmt.Printf("Snake pos: %v, Pellet pos: %v", snakePos, pelletPos)
+func New(app fyne.App) *Game {
+	w := window.New(app)
+	s := snake.New(w.PixelSize(), w.CenterPosition())
+	p := pellet.New(w.PixelSize(), w.RandomPosition())
 	sc := scorecounter.New()
 
 	return &Game{
@@ -45,13 +44,14 @@ func (g *Game) canvasObjects() []fyne.CanvasObject {
 	return objs
 }
 
-func Start() {
+func Start(ctx context.Context, app fyne.App) {
 	// Window initialization
-	rand.Seed(time.Now().UnixNano())
-	g := New()
+	g := New(app)
+	// Set the event handler for key presses
 	g.window.Canvas().SetOnTypedKey(g.steerSnake)
-	g.window.UpdateContent(g.canvasObjects()...)
+	// Run the game loop
 	go g.gameLoop()
+	// Show the window
 	g.window.ShowAndRun()
 }
 
@@ -65,65 +65,57 @@ func (g *Game) steerSnake(ev *fyne.KeyEvent) {
 		g.snake.SetDirection("left")
 	case fyne.KeyD, fyne.KeyRight:
 		g.snake.SetDirection("right")
+	case fyne.KeySpace, fyne.KeyP:
+		g.pause()
+		// While paused the printKeys function is still called and the direction of the snake is updated even while paused.
 	}
 }
 
-func (g *Game) gameLoop() {
-	for {
-		time.Sleep(time.Millisecond * 200)
+func (g *Game) pause() {
+	if g.isPaused {
+		g.isPaused = false
+		return
+	}
 
-		// Pellet Consumption - Score goes up by one when snake head touches it.
+	g.isPaused = true
+}
+
+func (g *Game) gameLoop() {
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		// Game is paused or over.
+		if g.isPaused || g.isOver {
+			ticker.Stop()
+		}
+
+		g.snake.Move()
+		g.window.UpdateContent(g.canvasObjects()...)
+
+		// Pellet Consumption
 		if g.pellet.Hit(g.snake.HeadPosition()) {
 			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
 			g.snake.Grow()
 			g.score.Increment()
-			g.moveSnake()
 			g.window.UpdateContent(g.canvasObjects()...)
 		}
-		// Snake dies on touching the game window
+		// Snake hitting the window boundary.
 		if g.window.Hit(g.snake.HeadPosition()) {
-			over()
+			g.over()
 		}
-		// Snake dies on touching it's own body.
-		if g.snake.SnakeBodyHit() {
-			over()
+		// Snake hitting itself.
+		if g.snake.BodyHit() {
+			g.over()
 		}
-
-		g.moveSnake()
-		g.window.UpdateContent(g.canvasObjects()...)
 	}
 }
 
-func (g *Game) moveSnake() {
-	// move headNode
-	var newPos fyne.Position
-	switch g.snake.Direction() {
-	case "up":
-		newPos = fyne.NewPos(
-			g.snake.HeadPosition().X,
-			g.snake.HeadPosition().Y-float32(g.window.PixelSize()),
-		)
-	case "down":
-		newPos = fyne.NewPos(
-			g.snake.HeadPosition().X,
-			g.snake.HeadPosition().Y+float32(g.window.PixelSize()),
-		)
-	case "left":
-		newPos = fyne.NewPos(
-			g.snake.HeadPosition().X-float32(g.window.PixelSize()),
-			g.snake.HeadPosition().Y,
-		)
-	case "right":
-		newPos = fyne.NewPos(
-			g.snake.HeadPosition().X+float32(g.window.PixelSize()),
-			g.snake.HeadPosition().Y,
-		)
-	}
-
-	g.snake.Move(newPos)
-}
-
-func over() {
-	fmt.Println("Game over!!")
-	os.Exit(0)
+func (g *Game) over() {
+	g.isOver = true
+	text1 := canvas.NewText("Game Over", color.White)
+	text2 := g.score.Display()
+	gameOverContainer := container.NewVBox(text1, text2)
+	content := container.New(layout.NewCenterLayout(), gameOverContainer)
+	g.window.SetContent(content)
 }

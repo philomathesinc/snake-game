@@ -13,5 +13,9 @@ func Start(ctx context.Context) {
 	rand.Seed(time.Now().UnixNano())
 
 	app := app.New()
-	game.Start(ctx, app)
+	g := game.New(app)
+	g.Start()
+
+	// Run the app
+	app.Run()
 }

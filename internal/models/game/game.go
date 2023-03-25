@@ -1,8 +1,6 @@
 package game
 
 import (
-	"context"
-	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -16,6 +14,7 @@ import (
 )
 
 type Game struct {
+	app      fyne.App
 	window   *window.Window
 	snake    *snake.Snake
 	score    *scorecounter.ScoreCounter
@@ -25,12 +24,13 @@ type Game struct {
 }
 
 func New(app fyne.App) *Game {
-	w := window.New(app)
+	w := window.New(app, "Snake Game")
 	s := snake.New(w.PixelSize(), w.CenterPosition())
 	p := pellet.New(w.PixelSize(), w.RandomPosition())
 	sc := scorecounter.New()
 
 	return &Game{
+		app:    app,
 		window: w,
 		snake:  s,
 		score:  sc,
@@ -44,15 +44,13 @@ func (g *Game) canvasObjects() []fyne.CanvasObject {
 	return objs
 }
 
-func Start(ctx context.Context, app fyne.App) {
-	// Window initialization
-	g := New(app)
+func (g *Game) Start() {
 	// Set the event handler for key presses
 	g.window.Canvas().SetOnTypedKey(g.steerSnake)
 	// Run the game loop
 	go g.gameLoop()
-	// Show the window
-	g.window.ShowAndRun()
+	// 	Display the game window
+	g.window.Show()
 }
 
 func (g *Game) steerSnake(ev *fyne.KeyEvent) {
@@ -66,14 +64,14 @@ func (g *Game) steerSnake(ev *fyne.KeyEvent) {
 	case fyne.KeyD, fyne.KeyRight:
 		g.snake.SetDirection("right")
 	case fyne.KeySpace, fyne.KeyP:
-		g.pause()
-		// While paused the printKeys function is still called and the direction of the snake is updated even while paused.
+		g.togglePause()
 	}
 }
 
-func (g *Game) pause() {
+func (g *Game) togglePause() {
 	if g.isPaused {
 		g.isPaused = false
+
 		return
 	}
 
@@ -85,12 +83,20 @@ func (g *Game) gameLoop() {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		// Game is paused or over.
-		if g.isPaused || g.isOver {
+		// Game is paused.
+		if g.isPaused {
+			continue
+		}
+
+		// Game is over.
+		if g.isOver {
 			ticker.Stop()
 		}
 
+		// Move the snake
 		g.snake.Move()
+
+		// Update the window contents - snake, pellet, score
 		g.window.UpdateContent(g.canvasObjects()...)
 
 		// Pellet Consumption
@@ -112,10 +118,21 @@ func (g *Game) gameLoop() {
 }
 
 func (g *Game) over() {
+	// Set Game Over state
 	g.isOver = true
-	text1 := canvas.NewText("Game Over", color.White)
-	text2 := g.score.Display()
-	gameOverContainer := container.NewVBox(text1, text2)
+
+	// Get updated score and increase font size
+	scoreDisplay := g.score.Display()
+	scoreDisplay.(*canvas.Text).TextSize = 50
+
+	// Create and display the Game Over window
+	gameOverContainer := container.NewVBox(scoreDisplay)
 	content := container.New(layout.NewCenterLayout(), gameOverContainer)
-	g.window.SetContent(content)
+	gameOverWindow := window.New(g.app, "Game Over")
+	gameOverWindow.Resize(fyne.Size{
+		Width:  300,
+		Height: 100,
+	})
+	gameOverWindow.SetContent(content)
+	gameOverWindow.Show()
 }

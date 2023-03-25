@@ -38,8 +38,8 @@ func (w *Window) RandomPosition() fyne.Position {
 	return i
 }
 
-func New(a fyne.App) *Window {
-	w := a.NewWindow("Snake Game")
+func New(a fyne.App, title string) *Window {
+	w := a.NewWindow(title)
 	w.Resize(fyne.Size{
 		Width:  length,
 		Height: length,

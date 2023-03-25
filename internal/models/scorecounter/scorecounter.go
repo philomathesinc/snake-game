@@ -24,6 +24,10 @@ func (sc *ScoreCounter) Increment() {
 	sc.count++
 }
 
+func (sc *ScoreCounter) Value() int {
+	return sc.count
+}
+
 func (sc *ScoreCounter) Display() fyne.CanvasObject {
 	sc.display = canvas.NewText(fmt.Sprintf("Score: %d", sc.count), color.White)
 

@@ -69,10 +69,6 @@ func (s *Snake) SnakeBodyHit() bool {
 	return false
 }
 
-func (s *Snake) Move(pos fyne.Position) {
-	s.head.canvasObj.Move(pos)
-}
-
 func (s *Snake) BodyPositions() []fyne.CanvasObject {
 	objs := []fyne.CanvasObject{}
 	// Add all the snake nodes' CanvasObject to `objs`.
@@ -80,6 +76,12 @@ func (s *Snake) BodyPositions() []fyne.CanvasObject {
 		objs = append(objs, &node.canvasObj)
 	}
 	return objs
+}
+
+func (s *Snake) Move(pos fyne.Position) {
+	oldPos := s.HeadPosition()
+	s.head.canvasObj.Move(pos)
+	s.updateSnakeBody(oldPos)
 }
 
 func (s *Snake) updateSnakeBody(headOldPos fyne.Position) {

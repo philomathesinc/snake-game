@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"fyne.io/fyne/app"
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
 	"github.com/PhilomathesInc/snake-game/internal/models/pellet"
 	"github.com/PhilomathesInc/snake-game/internal/models/scorecounter"
 	"github.com/PhilomathesInc/snake-game/internal/models/snake"
@@ -33,11 +33,9 @@ func New() *Game {
 		score:  sc,
 		pellet: p,
 	}
-
 }
 
 func (g *Game) canvasObjects() []fyne.CanvasObject {
-
 	objs := g.snake.BodyPositions()
 	objs = append(objs, g.pellet.Display(), g.score.Display())
 	return objs
@@ -50,7 +48,7 @@ func Start() {
 	g.window.Canvas().SetOnTypedKey(g.steerSnake)
 	g.window.UpdateContent(g.canvasObjects()...)
 
-	// Score goes up by one when snake head touches it.
+	// Pellet Consumption - Score goes up by one when snake head touches it.
 	go func() {
 		if g.pellet.Hit(g.snake.HeadPosition()) {
 			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
@@ -104,7 +102,7 @@ func (g *Game) gameLoop() {
 func (g *Game) moveSnake() {
 	// move headNode
 	var newPos fyne.Position
-	oldPos := g.snake.HeadPosition()
+	// oldPos := g.snake.HeadPosition()
 	switch g.snake.Direction() {
 	case "up":
 		newPos = fyne.NewPos(g.snake.HeadPosition().X, g.snake.HeadPosition().Y-float32(g.window.PixelSize()))
@@ -119,7 +117,7 @@ func (g *Game) moveSnake() {
 	// ToDo: Combine below functions in snake model
 	g.snake.Move(newPos)
 	// rest of the snake body move
-	g.updateSnakeBody(oldPos)
+	// g.updateSnakeBody(oldPos)
 
 	// ToDo: Refresh should be in window package
 	for node := g.SnakeInstance.head; node != nil; node = node.next {

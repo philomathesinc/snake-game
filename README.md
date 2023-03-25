@@ -23,7 +23,7 @@
 Snake:
 - func New() Snake {}
     - Sets length to 1.
-    
+
 - func (s *Snake) Move(fyne.Position) {}
     - This method just updates the position of all the snake nodes based on the direction set on the head node.
     - Does not update the canvas.
@@ -45,7 +45,7 @@ Pellet:
 - ToDo : Once "consumed" by the snake, new food pellet needs to be spawned
 
 Window:
-- func (w *Window) randomPosition() fyne.Position {} 
+- func (w *Window) randomPosition() fyne.Position {}
     - return random position limited by length and width of window
 - func (w *Window) Refresh() {}
     - g.window.Canvas().Refresh(&tmp.canvasObj)
@@ -80,4 +80,4 @@ Game:
         - Check self hit on snake
             - GameOver()
         - Snake.Move()
-        - GameWindow.SetContent()
+        - GameWindow.UpdateContent()

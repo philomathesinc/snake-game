@@ -51,36 +51,6 @@ func Start() {
 	g := New()
 	g.window.Canvas().SetOnTypedKey(g.steerSnake)
 	g.window.UpdateContent(g.canvasObjects()...)
-
-	// Pellet Consumption - Score goes up by one when snake head touches it.
-	go func() {
-		if g.pellet.Hit(g.snake.HeadPosition()) {
-			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
-			g.snake.Grow()
-			g.score.Increment()
-
-			objs := g.snake.BodyPositions()
-			objs = append(objs, g.pellet.Display(), g.score.Display())
-			g.window.UpdateContent(objs...)
-		}
-	}()
-
-	// Snake dies on touching the game window
-	go func() {
-		fmt.Println("DEBUG: before g.window.Hit")
-		if g.window.Hit(g.snake.HeadPosition()) {
-			fmt.Println("DEBUG: inside g.window.Hit")
-			over()
-		}
-	}()
-
-	// Snake dies on touching it's own body.
-	go func() {
-		if g.snake.SnakeBodyHit() {
-			over()
-		}
-	}()
-
 	go g.gameLoop()
 	g.window.ShowAndRun()
 }
@@ -101,6 +71,27 @@ func (g *Game) steerSnake(ev *fyne.KeyEvent) {
 func (g *Game) gameLoop() {
 	for {
 		time.Sleep(time.Millisecond * 200)
+
+		// Pellet Consumption - Score goes up by one when snake head touches it.
+		if g.pellet.Hit(g.snake.HeadPosition()) {
+			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
+			g.snake.Grow()
+			g.score.Increment()
+
+			objs := g.snake.BodyPositions()
+			objs = append(objs, g.pellet.Display(), g.score.Display())
+			g.window.UpdateContent(objs...)
+		}
+		// Snake dies on touching the game window
+		if g.window.Hit(g.snake.HeadPosition()) {
+			fmt.Println("DEBUG: inside g.window.Hit")
+			over()
+		}
+		// Snake dies on touching it's own body.
+		if g.snake.SnakeBodyHit() {
+			over()
+		}
+
 		g.moveSnake()
 		g.window.UpdateContent(g.canvasObjects()...)
 	}

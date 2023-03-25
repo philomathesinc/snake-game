@@ -42,6 +42,7 @@ func New(pixelSize int, position fyne.Position) *Snake {
 	snake := Snake{}
 	snake.pixelSize = float32(pixelSize)
 	snake.head = snake.newSnakeNode()
+	snake.Move(position)
 	snake.tail = snake.head
 	snake.length = 1
 	return &snake

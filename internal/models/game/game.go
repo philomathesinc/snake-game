@@ -77,14 +77,11 @@ func (g *Game) gameLoop() {
 			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
 			g.snake.Grow()
 			g.score.Increment()
-
-			objs := g.snake.BodyPositions()
-			objs = append(objs, g.pellet.Display(), g.score.Display())
-			g.window.UpdateContent(objs...)
+			g.moveSnake()
+			g.window.UpdateContent(g.canvasObjects()...)
 		}
 		// Snake dies on touching the game window
 		if g.window.Hit(g.snake.HeadPosition()) {
-			fmt.Println("DEBUG: inside g.window.Hit")
 			over()
 		}
 		// Snake dies on touching it's own body.
@@ -124,12 +121,6 @@ func (g *Game) moveSnake() {
 	}
 
 	g.snake.Move(newPos)
-
-	// ToDo: Refresh should be in window package
-	// for node := g.SnakeInstance.head; node != nil; node = node.next {
-	// 	g.window.Canvas().Refresh(&node.canvasObj)
-	// }
-
 }
 
 func over() {

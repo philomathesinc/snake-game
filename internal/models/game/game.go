@@ -21,6 +21,7 @@ type Game struct {
 	pellet   *pellet.Pellet
 	isPaused bool
 	isOver   bool
+	speed    int
 }
 
 func New(app fyne.App) *Game {
@@ -35,6 +36,7 @@ func New(app fyne.App) *Game {
 		snake:  s,
 		score:  sc,
 		pellet: p,
+		speed:  0,
 	}
 }
 
@@ -47,6 +49,7 @@ func (g *Game) canvasObjects() []fyne.CanvasObject {
 func (g *Game) Start() {
 	// Set the event handler for key presses
 	g.window.Canvas().SetOnTypedKey(g.steerSnake)
+
 	// Run the game loop
 	go g.gameLoop()
 	// 	Display the game window
@@ -56,13 +59,21 @@ func (g *Game) Start() {
 func (g *Game) steerSnake(ev *fyne.KeyEvent) {
 	switch ev.Name {
 	case fyne.KeyW, fyne.KeyUp:
-		g.snake.SetDirection("up")
+		if !g.isPaused {
+			g.snake.SetDirection("up")
+		}
 	case fyne.KeyS, fyne.KeyDown:
-		g.snake.SetDirection("down")
+		if !g.isPaused {
+			g.snake.SetDirection("down")
+		}
 	case fyne.KeyA, fyne.KeyLeft:
-		g.snake.SetDirection("left")
+		if !g.isPaused {
+			g.snake.SetDirection("left")
+		}
 	case fyne.KeyD, fyne.KeyRight:
-		g.snake.SetDirection("right")
+		if !g.isPaused {
+			g.snake.SetDirection("right")
+		}
 	case fyne.KeySpace, fyne.KeyP:
 		g.togglePause()
 	}
@@ -80,40 +91,57 @@ func (g *Game) togglePause() {
 
 func (g *Game) gameLoop() {
 	ticker := time.NewTicker(200 * time.Millisecond)
-	defer ticker.Stop()
 
-	for range ticker.C {
-		// Game is paused.
-		if g.isPaused {
-			continue
-		}
+	for {
+		select {
+		case <-ticker.C:
+			// Game is paused.
+			if g.isPaused {
+				continue
+			}
 
-		// Game is over.
-		if g.isOver {
-			ticker.Stop()
-		}
+			// Game is over.
+			if g.isOver {
+				ticker.Stop()
+				continue
+			}
 
-		// Move the snake
-		g.snake.Move()
+			// Move the snake
+			g.snake.Move()
 
-		// Update the window contents - snake, pellet, score
-		g.window.UpdateContent(g.canvasObjects()...)
-
-		// Pellet Consumption
-		if g.pellet.Hit(g.snake.HeadPosition()) {
-			g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
-			g.snake.Grow()
-			g.score.Increment()
+			// Update the window contents - snake, pellet, score
 			g.window.UpdateContent(g.canvasObjects()...)
+
+			// Pellet Consumption
+			if g.pellet.Hit(g.snake.HeadPosition()) {
+				g.increaseSpeed()
+				tickerSpeed := (time.Duration(200.0-g.speed) * time.Millisecond)
+				ticker = time.NewTicker(tickerSpeed)
+				g.pellet = pellet.New(g.window.PixelSize(), g.window.RandomPosition())
+				g.snake.Grow()
+				g.score.Increment()
+				g.window.UpdateContent(g.canvasObjects()...)
+			}
+			// Snake hitting the window boundary.
+			if g.window.Hit(g.snake.HeadPosition()) {
+				g.over()
+			}
+			// Snake hitting itself.
+			if g.snake.BodyHit() {
+				g.over()
+			}
 		}
-		// Snake hitting the window boundary.
-		if g.window.Hit(g.snake.HeadPosition()) {
-			g.over()
-		}
-		// Snake hitting itself.
-		if g.snake.BodyHit() {
-			g.over()
-		}
+	}
+}
+
+func (g *Game) increaseSpeed() {
+	switch speed := g.speed; {
+	case speed < 50:
+		g.speed += 10
+	case speed < 150:
+		g.speed += 5
+	case speed <= 200:
+		g.speed += 2
 	}
 }
 

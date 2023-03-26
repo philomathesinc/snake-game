@@ -1,7 +1,6 @@
 package window
 
 import (
-	"fmt"
 	"math/rand"
 
 	"fyne.io/fyne/v2"
@@ -27,7 +26,6 @@ func generateRandomNumber(limit int) int {
 }
 
 func (w *Window) RandomPosition() fyne.Position {
-
 	var (
 		i               fyne.Position
 		pixelCountLimit = length/singlePixel - 1
@@ -40,8 +38,8 @@ func (w *Window) RandomPosition() fyne.Position {
 	return i
 }
 
-func New(a fyne.App) *Window {
-	w := a.NewWindow("Snake Game")
+func New(a fyne.App, title string) *Window {
+	w := a.NewWindow(title)
 	w.Resize(fyne.Size{
 		Width:  length,
 		Height: length,
@@ -66,17 +64,12 @@ func (w *Window) CenterPosition() fyne.Position {
 	return fyne.NewPos((length-singlePixel)/2, (length-singlePixel)/2)
 }
 
+// Hit returns true if the position is outside the window.
 func (w *Window) Hit(p fyne.Position) bool {
 	right := p.Y >= length
-	fmt.Printf("p: %v\n", p)
-	fmt.Println(right)
 	left := p.X >= length
-	fmt.Println(left)
 	top := p.X <= 0
-	fmt.Println(top)
 	bottom := p.Y <= 0
-	fmt.Println(bottom)
 
-	// return !((gameInstance.snakeInstance.head.snakeObj.Position().Y == finalSpaceHeight) || (gameInstance.snakeInstance.head.snakeObj.Position().X == finalSpaceWidth) || (gameInstance.snakeInstance.head.snakeObj.Position().X < 0) || (gameInstance.snakeInstance.head.snakeObj.Position().Y < 0))
 	return (right || left || top || bottom)
 }
